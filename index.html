@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gemini Unified Interface (Fixed)</title>
+    <title>Gemini Unified Interface</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
@@ -21,7 +21,7 @@
         .control-group { display: flex; flex-direction: column; gap: 8px; }
         label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: #888; font-weight: 600; }
         select { width: 100%; padding: 12px; background-color: var(--input-bg); color: white; border: 1px solid var(--border-color); border-radius: 8px; font-size: 14px; outline: none; cursor: pointer; }
-        .proxy-container { display: flex; align-items: center; gap: 10px; font-size: 0.9rem; color: #ccc; padding: 10px; background: rgba(255,255,255,0.03); border-radius: 8px; }
+        .proxy-container { display: flex; align-items: center; gap: 10px; font-size: 0.9rem; color: #ccc; padding: 10px; background: rgba(255,255,255,0.03); border-radius: 8px; border: 1px solid #333; }
         .main-content { flex: 1; display: flex; flex-direction: column; position: relative; }
         .chat-container { flex: 1; padding: 40px; overflow-y: auto; display: flex; flex-direction: column; gap: 24px; max-width: 900px; margin: 0 auto; width: 100%; padding-bottom: 140px; scroll-behavior: smooth; }
         .message { display: flex; gap: 20px; line-height: 1.6; animation: fadeIn 0.3s ease; }
@@ -37,6 +37,7 @@
         button.send-btn { background: var(--accent-color); border: none; color: white; cursor: pointer; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
         button.send-btn:disabled { background: #555; cursor: not-allowed; }
         .error-msg { color: #ff5546; background: rgba(255, 85, 70, 0.1); padding: 10px; border-radius: 8px; border: 1px solid #ff5546; display: inline-block; }
+        .warning-text { font-size: 0.7rem; color: #ffaa46; margin-top: 5px; line-height: 1.3; }
     </style>
 </head>
 <body>
@@ -46,18 +47,20 @@
         
         <div class="control-group">
             <label>Select Model</label>
-            <select id="providerSelect">
-                </select>
+            <select id="providerSelect"></select>
         </div>
 
         <div class="control-group">
-            <label>Connection Settings</label>
+            <label>Connection Mode</label>
             <div class="proxy-container">
-                <input type="checkbox" id="proxyToggle" checked>
-                <span>Enable Proxy (Required)</span>
+                <input type="checkbox" id="directMode" onchange="toggleWarning()">
+                <span>Direct Connection</span>
             </div>
-            <div style="font-size: 0.75rem; color: #666; padding:0 5px;">
-                Required for GitHub Pages to bypass CORS.
+            <div id="warningMsg" class="warning-text" style="display:none">
+                <b>⚠️ Important:</b> Requires "Allow CORS" browser extension. This fixes 403 errors by behaving exactly like Python.
+            </div>
+            <div id="proxyMsg" class="warning-text">
+                Uses <code>corsproxy.io</code>. May fail for strict models (Venice, UseAI).
             </div>
         </div>
     </div>
@@ -67,8 +70,7 @@
             <div class="message">
                 <div class="avatar ai">AI</div>
                 <div class="content">
-                    <p>System Ready. I have optimized the headers for browser compatibility.</p>
-                    <p><b>Note:</b> Some models (like ChatPlus) may still block browsers due to strict security checks.</p>
+                    <p>System Ready. Select a model to begin.</p>
                 </div>
             </div>
         </div>
@@ -88,31 +90,26 @@
         function getTimestamp() { return new Date().toISOString(); }
 
         // ==========================================
-        //  REVISED PROVIDERS (Browser Safe)
+        //  PROVIDER LOGIC
         // ==========================================
-        // We REMOVED 'Origin' and 'Referer' headers because browsers throw errors if you try to set them.
-        
         const PROVIDERS = {
             talkai: {
                 name: "TalkAI (Stable)",
                 url: "https://talkai.info/chat/send/",
-                headers: { "Content-Type": "application/json" },
+                headers: { "Content-Type": "application/json", "Origin": "https://talkai.info", "Referer": "https://talkai.info/chat/" },
                 getPayload: (msg) => ({
-                    type: "chat",
-                    messagesHistory: [{ id: uuid(), from: "you", content: msg, model: "" }],
+                    type: "chat", messagesHistory: [{ id: uuid(), from: "you", content: msg, model: "" }],
                     settings: { model: "gpt-4.1-nano", temperature: 0.7 }
                 }),
                 parseLine: (line) => {
-                    if (line.startsWith("data:") && !line.includes("GPT") && line !== "data: -1") {
-                        return line.substring(5).trim() + " ";
-                    }
+                    if (line.startsWith("data:") && !line.includes("GPT") && line !== "data: -1") return line.substring(5).trim() + " ";
                     return "";
                 }
             },
             gptai: {
                 name: "GPTAI (Stable)",
                 url: "https://gptaichat.org/wp-admin/admin-ajax.php",
-                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                headers: { "Content-Type": "application/x-www-form-urlencoded", "Origin": "https://gptaichat.org" },
                 getPayload: (msg) => new URLSearchParams({
                     "_wpnonce": "77b0336a1d", "post_id": "10", "action": "wpaicg_chat_shortcode_message",
                     "message": msg, "bot_id": "0", "chat_id": "5635"
@@ -125,9 +122,9 @@
                 }
             },
             venice: {
-                name: "Venice AI (Strict)",
+                name: "Venice AI (High Security)",
                 url: "https://outerface.venice.ai/api/inference/chat",
-                headers: { "Content-Type": "application/json", "x-venice-version": "interface@python-client" },
+                headers: { "Content-Type": "application/json", "x-venice-version": "interface@python-client", "Origin": "https://venice.ai" },
                 getPayload: (msg) => ({
                     conversationId: uuid().slice(0,7), modelId: "zai-org-glm-4.6",
                     prompt: [{ role: "user", content: msg }], temperature: 0.7, webEnabled: true
@@ -138,9 +135,9 @@
                 }
             },
             useai: {
-                name: "Use.ai (Strict)",
+                name: "Use.ai (High Security)",
                 url: "https://use.ai/v1/chat",
-                headers: { "Content-Type": "application/json" },
+                headers: { "Content-Type": "application/json", "Origin": "https://use.ai" },
                 getPayload: (msg) => ({
                     chatId: uuid(), selectedChatModel: "gateway-gpt-5",
                     message: { id: uuid().slice(0,16), role: "user", parts: [{ type: "text", text: msg }] }
@@ -153,9 +150,9 @@
                 }
             },
             notegpt: {
-                name: "NoteGPT (Strict)",
+                name: "NoteGPT",
                 url: "https://notegpt.io/api/v2/chat/stream",
-                headers: { "Content-Type": "application/json" },
+                headers: { "Content-Type": "application/json", "Origin": "https://notegpt.io" },
                 getPayload: (msg) => ({
                     conversation_id: uuid(), message: msg, language: "en", model: "gpt-4.1-mini", tone: "default"
                 }),
@@ -169,7 +166,7 @@
             chatpdf: {
                 name: "ChatPDF",
                 url: "https://webapi.chatpdf.com/stream",
-                headers: { "Content-Type": "application/json", "atoken": "FmvMl8SVJxUyIAAbGPSjG" },
+                headers: { "Content-Type": "application/json", "atoken": "FmvMl8SVJxUyIAAbGPSjG", "Origin": "https://www.chatpdf.com" },
                 getPayload: (msg) => ({
                     type: "initChatFromText", chatId: "cha_" + uuid().slice(0,10), text: msg, msgType: "standard",
                     msgMeta: { ai: {id: "OE5mBBw9Js"}, user: {id: "yf5geUuhWS"} }
@@ -191,31 +188,27 @@
                     return "";
                 }
             },
-            freedom: {
-                name: "FreedomGPT",
-                url: "https://chat.freedomgpt.com/api/v1/chat/completions",
-                headers: { "Content-Type": "application/json", "Authorization": "Bearer null" },
-                getPayload: (msg) => ({
-                    model: { id: "auto" }, messages: [{ role: "user", content: msg }], temperature: 0
-                }),
-                parseLine: (line) => {
-                    if (line.startsWith("data:") && !line.includes("[DONE]")) {
-                        try { return JSON.parse(line.substring(6).trim()).choices?.[0]?.delta?.content || ""; } catch (e) {}
-                    }
-                    return "";
-                }
-            },
             chatplus: {
-                name: "ChatPlus (Very Strict)",
+                name: "ChatPlus",
                 url: "https://chatplus.com/api/chat",
-                headers: { "Content-Type": "application/json" },
+                headers: { "Content-Type": "application/json", "Origin": "https://chatplus.com" },
                 getPayload: (msg) => ({
                     id: "guest", messages: [{ id: uuid(), createdAt: getTimestamp(), role: "user", content: msg, parts: [{ type: "text", text: msg }] }],
                     selectedChatModelId: "gpt-4o-mini", token: null
                 }),
                 parseLine: (line) => {
-                    if (line.startsWith("0:") && line.includes('"')) {
-                        return line.split('"', 2)[1] || ""; // Simple split hack for ChatPlus
+                    if (line.startsWith("0:") && line.includes('"')) return line.split('"', 2)[1] || "";
+                    return "";
+                }
+            },
+            freedom: {
+                name: "FreedomGPT",
+                url: "https://chat.freedomgpt.com/api/v1/chat/completions",
+                headers: { "Content-Type": "application/json", "Authorization": "Bearer null" },
+                getPayload: (msg) => ({ model: { id: "auto" }, messages: [{ role: "user", content: msg }], temperature: 0 }),
+                parseLine: (line) => {
+                    if (line.startsWith("data:") && !line.includes("[DONE]")) {
+                        try { return JSON.parse(line.substring(6).trim()).choices?.[0]?.delta?.content || ""; } catch (e) {}
                     }
                     return "";
                 }
@@ -226,18 +219,22 @@
         const selectEl = document.getElementById('providerSelect');
         Object.keys(PROVIDERS).forEach(key => {
             const opt = document.createElement('option');
-            opt.value = key;
-            opt.textContent = PROVIDERS[key].name;
-            selectEl.appendChild(opt);
+            opt.value = key; opt.textContent = PROVIDERS[key].name; selectEl.appendChild(opt);
         });
 
+        function toggleWarning() {
+            const isDirect = document.getElementById('directMode').checked;
+            document.getElementById('warningMsg').style.display = isDirect ? 'block' : 'none';
+            document.getElementById('proxyMsg').style.display = isDirect ? 'none' : 'block';
+        }
+
         // ==========================================
-        //  LOGIC
+        //  MAIN CHAT LOGIC
         // ==========================================
         const chatContainer = document.getElementById('chatContainer');
         const userInput = document.getElementById('userInput');
         const sendBtn = document.getElementById('sendBtn');
-        const proxyToggle = document.getElementById('proxyToggle');
+        const directMode = document.getElementById('directMode');
 
         userInput.addEventListener('keypress', (e) => { if (e.key === 'Enter' && !e.shiftKey) sendMessage(); });
 
@@ -246,35 +243,32 @@
             if (!text) return;
 
             addMessage('You', 'user', text);
-            userInput.value = '';
-            userInput.disabled = true; sendBtn.disabled = true;
+            userInput.value = ''; userInput.disabled = true; sendBtn.disabled = true;
 
             const aiMsgId = addMessage('AI', 'ai', '<span style="color:#888">Thinking...</span>');
             let fullResponse = "";
-            let hasError = false;
 
             const providerKey = selectEl.value;
             const provider = PROVIDERS[providerKey];
-            let url = provider.url;
+            const isDirect = directMode.checked;
             
-            // Apply Proxy
-            if (proxyToggle.checked) {
-                url = PROXY_URL + encodeURIComponent(url);
-            }
+            // LOGIC: If Direct Mode, use original URL. If Proxy Mode, wrap it.
+            let fetchUrl = isDirect ? provider.url : PROXY_URL + encodeURIComponent(provider.url);
+            
+            // LOGIC: If Direct Mode, send spoofed headers. If Proxy Mode, strip them (browsers block them on proxy requests).
+            const fetchHeaders = isDirect ? provider.headers : { "Content-Type": provider.headers["Content-Type"] };
 
             const payload = provider.getPayload(text);
             const isFormData = payload instanceof URLSearchParams;
 
             try {
-                const response = await fetch(url, {
+                const response = await fetch(fetchUrl, {
                     method: "POST",
-                    headers: provider.headers,
+                    headers: fetchHeaders,
                     body: isFormData ? payload : JSON.stringify(payload)
                 });
 
-                if (!response.ok) {
-                    throw new Error(`HTTP Error ${response.status}: ${response.statusText}`);
-                }
+                if (!response.ok) throw new Error(`HTTP Error ${response.status}`);
 
                 const reader = response.body.getReader();
                 const decoder = new TextDecoder();
@@ -299,12 +293,10 @@
                     }
                 }
                 
-                if (!fullResponse) {
-                   updateMessage(aiMsgId, "<i>(No text returned. The model might have blocked the proxy request.)</i>");
-                }
+                if (!fullResponse) updateMessage(aiMsgId, "<i>(No text returned. Try switching to Direct Mode with a CORS extension.)</i>");
 
             } catch (error) {
-                updateMessage(aiMsgId, `<div class="error-msg"><b>Connection Failed</b><br>${error.message}<br><br><small>Try switching models or unchecking the proxy.</small></div>`);
+                updateMessage(aiMsgId, `<div class="error-msg"><b>Connection Failed</b><br>${error.message}<br><br><small>If using Venice/UseAI, enable 'Direct Connection' and install a CORS extension.</small></div>`);
             }
 
             userInput.disabled = false; sendBtn.disabled = false; userInput.focus();
@@ -323,9 +315,7 @@
         function updateMessage(id, text) {
             const msgDiv = document.getElementById(id);
             if (msgDiv) {
-                const contentDiv = msgDiv.querySelector('.content');
-                // Only re-parse markdown if length changed significantly to save perf
-                contentDiv.innerHTML = marked.parse(text); 
+                msgDiv.querySelector('.content').innerHTML = marked.parse(text);
                 chatContainer.scrollTop = chatContainer.scrollHeight;
             }
         }
