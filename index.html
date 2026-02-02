@@ -3,76 +3,80 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VincentAI | DeepWeb Interface</title>
+    <title>VincentAI | Neural Interface</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
-
         :root {
-            --bg: #f8f9fa;
-            --surface: #ffffff;
+            --bg-color: #f8fafc;
+            --chat-bg: #ffffff;
             --primary: #2563eb;
-            --text-main: #1e293b;
-            --text-sub: #64748b;
+            --text-dark: #0f172a;
+            --text-light: #64748b;
             --border: #e2e8f0;
         }
 
         body {
-            background-color: var(--bg);
-            color: var(--text-main);
             font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
             margin: 0;
             display: flex;
             flex-direction: column;
             height: 100vh;
-            overflow: hidden;
         }
 
-        /* --- Header --- */
+        /* HEADER */
         header {
-            background: var(--surface);
-            padding: 1rem 2rem;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
+            background: var(--chat-bg);
+            padding: 1rem 1.5rem;
             border-bottom: 1px solid var(--border);
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
-        .brand {
-            font-weight: 600;
+        .logo {
+            font-weight: 700;
             font-size: 1.25rem;
+            color: var(--text-dark);
             display: flex;
             align-items: center;
-            gap: 0.75rem;
-            color: var(--text-main);
+            gap: 0.5rem;
         }
 
-        .brand i { color: var(--primary); }
+        .logo i { color: var(--primary); }
 
-        /* Model Switcher UI */
-        .controls { display: flex; align-items: center; gap: 1rem; }
+        /* MODEL SWITCHER */
+        .model-selector {
+            position: relative;
+        }
 
         select {
             appearance: none;
-            background-color: var(--bg);
+            background-color: var(--bg-color);
             border: 1px solid var(--border);
-            border-radius: 8px;
             padding: 0.5rem 2rem 0.5rem 1rem;
-            font-size: 0.875rem;
-            color: var(--text-main);
+            border-radius: 8px;
+            font-family: inherit;
+            color: var(--text-dark);
             cursor: pointer;
-            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
-            background-position: right 0.5rem center;
-            background-repeat: no-repeat;
-            background-size: 1.5em 1.5em;
+            font-size: 0.9rem;
             outline: none;
-            transition: border-color 0.2s;
+        }
+        
+        select:hover { border-color: var(--primary); }
+
+        .fa-chevron-down {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 0.7rem;
+            color: var(--text-light);
+            pointer-events: none;
         }
 
-        select:focus { border-color: var(--primary); }
-
-        /* --- Chat Area --- */
+        /* CHAT AREA */
         main {
             flex: 1;
             overflow-y: auto;
@@ -83,231 +87,274 @@
             scroll-behavior: smooth;
         }
 
-        .message-row {
-            display: flex;
-            gap: 1rem;
-            max-width: 800px;
+        .message-group {
+            max-width: 700px;
             margin: 0 auto;
             width: 100%;
-            animation: fadeUp 0.3s ease-out;
+            display: flex;
+            gap: 1rem;
+            animation: fadeIn 0.3s ease-out;
         }
 
         .avatar {
-            width: 36px;
-            height: 36px;
-            border-radius: 8px;
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
             display: flex;
             align-items: center;
             justify-content: center;
             flex-shrink: 0;
-            font-size: 0.9rem;
         }
 
-        .avatar.ai { background: var(--primary); color: white; }
-        .avatar.user { background: #cbd5e1; color: var(--text-sub); }
+        .avatar.ai { background-color: var(--primary); color: white; }
+        .avatar.user { background-color: #cbd5e1; color: var(--text-light); }
 
         .bubble {
             flex: 1;
-            padding-top: 0.35rem;
+            background: transparent;
+        }
+
+        .bubble-name {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 0.25rem;
+        }
+
+        .bubble-text {
             line-height: 1.6;
+            color: var(--text-dark);
             font-size: 0.95rem;
+            white-space: pre-wrap;
         }
 
-        .bubble strong { display: block; margin-bottom: 0.25rem; font-size: 0.85rem; }
-        .error-box { 
-            background: #fef2f2; border: 1px solid #fee2e2; 
-            color: #991b1b; padding: 1rem; border-radius: 8px; 
-            font-size: 0.9rem; margin-top: 0.5rem;
+        .error-bubble {
+            background-color: #fef2f2;
+            border: 1px solid #fee2e2;
+            color: #991b1b;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
         }
 
-        /* --- Footer --- */
+        /* FOOTER */
         footer {
-            background: var(--surface);
+            background: var(--chat-bg);
             padding: 1.5rem;
             border-top: 1px solid var(--border);
         }
 
-        form {
-            max-width: 800px;
+        .input-container {
+            max-width: 700px;
             margin: 0 auto;
             position: relative;
         }
 
         input {
             width: 100%;
-            padding: 1rem 3rem 1rem 1.25rem;
+            padding: 1rem 3.5rem 1rem 1.25rem;
             border-radius: 12px;
             border: 1px solid var(--border);
-            background: var(--bg);
+            font-family: inherit;
             font-size: 1rem;
             outline: none;
             box-sizing: border-box;
+            background-color: var(--bg-color);
             transition: all 0.2s;
         }
 
-        input:focus { border-color: var(--primary); background: white; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        input:focus {
+            background-color: white;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
 
-        button {
+        .send-btn {
             position: absolute;
-            right: 10px;
+            right: 8px;
             top: 50%;
             transform: translateY(-50%);
             background: none;
             border: none;
             color: var(--primary);
+            padding: 8px;
             cursor: pointer;
-            padding: 0.5rem;
             border-radius: 6px;
+            transition: background 0.2s;
         }
-        
-        button:hover { background: #eff6ff; }
-        button:disabled { color: #cbd5e1; cursor: not-allowed; }
 
-        @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .send-btn:hover { background-color: #eff6ff; }
+        .send-btn:disabled { color: #cbd5e1; cursor: not-allowed; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
     </style>
 </head>
 <body>
 
     <header>
-        <div class="brand">
-            <i class="fa-solid fa-shapes"></i>
+        <div class="logo">
+            <i class="fa-solid fa-layer-group"></i>
             <span>VincentAI</span>
         </div>
-        <div class="controls">
+        <div class="model-selector">
             <select id="model-select">
-                <option value="DeepSeek V3.2">DeepSeek V3.2</option>
-                <option value="Llama 3.3 70B Instruct">Llama 3.3 70B Instruct</option>
-                <option value="Qwen3 30B">Qwen3 30B</option>
-                <option value="GPT-4o mini">GPT-4o mini</option>
-                <option value="Gemma 3 12B">Gemma 3 12B</option>
-                <option value="Gemma2 9B">Gemma2 9B</option>
-                <option value="GPT-4.1 Nano">GPT-4.1 Nano</option>
-            </select>
+                </select>
+            <i class="fa-solid fa-chevron-down"></i>
         </div>
     </header>
 
-    <main id="chat-box">
-        <div class="message-row">
+    <main id="chat-container">
+        <div class="message-group">
             <div class="avatar ai"><i class="fa-solid fa-robot"></i></div>
             <div class="bubble">
-                <strong>VincentAI</strong>
-                System initialized. I am running the logic from <code>freedeepai.py</code>.
-                <br><br>
-                <em style="color: #ef4444; font-size: 0.85rem;">
-                    <i class="fa-solid fa-triangle-exclamation"></i> IMPORTANT: If replies fail, you must install a "CORS Unblocker" extension, as browsers block the headers this script requires.
-                </em>
+                <div class="bubble-name">VincentAI</div>
+                <div class="bubble-text">Hello! I am connected to the DeepAI engine. How can I help you today?</div>
             </div>
         </div>
     </main>
 
     <footer>
-        <form id="chat-form">
-            <input type="text" id="user-input" placeholder="Send a message..." autocomplete="off">
-            <button type="submit" id="send-btn"><i class="fa-solid fa-paper-plane"></i></button>
+        <form class="input-container" id="chat-form">
+            <input type="text" id="user-input" placeholder="Type your message..." autocomplete="off">
+            <button type="submit" class="send-btn" id="send-btn">
+                <i class="fa-solid fa-paper-plane"></i>
+            </button>
         </form>
     </footer>
 
     <script>
-        // --- LOGIC based on freedeepai.py ---
+        // --- CONFIGURATION ---
+        // We use a CORS Proxy to make this "Consumer Friendly" (no setup required)
+        const PROXY_URL = "https://corsproxy.io/?"; 
         const API_URL = "https://api.deepai.org/hacking_is_a_serious_crime"; //
-        const API_KEY = "tryit-48957598737-7bf6498cad4adf00c76eb3dfa97dc26d"; //
+        
+        // Models list from your script
+        const MODELS = [
+            "DeepSeek V3.2",
+            "Llama 3.3 70B Instruct",
+            "Qwen3 30B",
+            "GPT-4o mini",
+            "Gemma 3 12B",
+            "Gemma2 9B",
+            "GPT-4.1 Nano"
+        ];
 
-        const chatBox = document.getElementById('chat-box');
-        const form = document.getElementById('chat-form');
-        const input = document.getElementById('user-input');
+        // --- DOM ELEMENTS ---
+        const chatContainer = document.getElementById('chat-container');
+        const chatForm = document.getElementById('chat-form');
+        const userInput = document.getElementById('user-input');
         const sendBtn = document.getElementById('send-btn');
         const modelSelect = document.getElementById('model-select');
 
+        // --- INITIALIZATION ---
+        // 1. Populate Model Switcher
+        MODELS.forEach((model) => {
+            const option = document.createElement('option');
+            option.value = model;
+            option.textContent = model;
+            modelSelect.appendChild(option);
+        });
+
+        // --- FUNCTIONS ---
+
         function addMessage(role, text, isError = false) {
             const div = document.createElement('div');
-            div.className = "message-row";
-            
-            const avatarHtml = role === 'user' 
-                ? `<div class="avatar user"><i class="fa-solid fa-user"></i></div>`
-                : `<div class="avatar ai"><i class="fa-solid fa-robot"></i></div>`;
-            
+            div.className = "message-group";
+
+            const avatarClass = role === 'user' ? 'user' : 'ai';
+            const avatarIcon = role === 'user' ? '<i class="fa-solid fa-user"></i>' : '<i class="fa-solid fa-robot"></i>';
             const name = role === 'user' ? 'You' : 'VincentAI';
-            
-            let content = text;
+
+            let contentHTML = `<div class="bubble-text">${text}</div>`;
             if (isError) {
-                content = `<div class="error-box"><strong>Connection Failed</strong>${text}</div>`;
+                contentHTML = `<div class="error-bubble"><strong>Error:</strong> ${text}</div>`;
             }
 
             div.innerHTML = `
-                ${avatarHtml}
+                <div class="avatar ${avatarClass}">${avatarIcon}</div>
                 <div class="bubble">
-                    <strong>${name}</strong>
-                    <div>${content}</div>
+                    <div class="bubble-name">${name}</div>
+                    ${contentHTML}
                 </div>
             `;
             
-            chatBox.appendChild(div);
-            chatBox.scrollTop = chatBox.scrollHeight;
-            return div; // Return for removal if needed (like loading spinners)
+            chatContainer.appendChild(div);
+            // Auto-scroll to bottom
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+            return div;
         }
 
-        async function sendToDeepAI(message) {
-            // 1. Get current model from dropdown
-            const model = modelSelect.value; 
-
-            // 2. Construct Payload
+        async function fetchDeepAIResponse(message, model) {
+            // Prepare the form data exactly as freedeepai.py does
             const formData = new FormData();
             formData.append('chat_style', 'chat');
             formData.append('chatHistory', JSON.stringify([{ role: "user", content: message }]));
             formData.append('model', model);
             formData.append('enabled_tools', JSON.stringify(["image_generator", "image_editor"]));
-            formData.append('hacker_is_stinky', 'very_stinky'); // Required by script
+            
+            // This specific field is required by the API
+            formData.append('hacker_is_stinky', 'very_stinky');
 
-            // 3. Send Request
-            // NOTE: We CANNOT send 'Origin' or 'Referer' headers here. Browsers block them.
-            // This is why you need a CORS extension.
-            const response = await fetch(API_URL, {
+            // Send via Proxy
+            // We strip the custom headers (Origin/Referer) because the Proxy handles the connection.
+            // Sending them manually from a browser causes the crash you saw earlier.
+            const response = await fetch(PROXY_URL + encodeURIComponent(API_URL), {
                 method: 'POST',
                 headers: {
-                    "api-key": API_KEY
+                    "api-key": "tryit-48957598737-7bf6498cad4adf00c76eb3dfa97dc26d" //
                 },
                 body: formData
             });
 
             if (!response.ok) {
-                throw new Error(`API Error: ${response.status}`);
+                const errText = await response.text();
+                throw new Error(`Server responded with ${response.status}: ${errText.slice(0, 100)}`);
             }
 
             return await response.text();
         }
 
-        form.addEventListener('submit', async (e) => {
+        // --- EVENT LISTENERS ---
+
+        chatForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const text = input.value.trim();
+            const text = userInput.value.trim();
+            const model = modelSelect.value; // Get currently selected model
+
             if (!text) return;
 
-            // UI State
-            input.value = '';
-            input.disabled = true;
+            // UI Updates
+            userInput.value = '';
+            userInput.disabled = true;
             sendBtn.disabled = true;
 
             addMessage('user', text);
-
-            // Loading Spinner
-            const loadingMsg = addMessage('ai', '<i class="fa-solid fa-spinner fa-spin"></i> Processing...');
+            const loadingMsg = addMessage('ai', 'Thinking...');
 
             try {
-                const responseText = await sendToDeepAI(text);
+                const responseText = await fetchDeepAIResponse(text, model);
                 loadingMsg.remove();
                 addMessage('ai', responseText);
-            } catch (err) {
+            } catch (error) {
                 loadingMsg.remove();
+                console.error(error);
                 
-                let errorDetails = "The browser blocked the request.";
-                if (err.message.includes("Failed to fetch")) {
-                    errorDetails = "CORS ERROR. Please install a 'CORS Unblocker' extension to use this interface.";
+                let friendlyError = "Something went wrong.";
+                if (error.message.includes('Failed to fetch')) {
+                    friendlyError = "Connection blocked. The proxy server may be overloaded or the API has blocked this request method.";
+                } else {
+                    friendlyError = error.message;
                 }
                 
-                addMessage('ai', errorDetails, true);
+                addMessage('ai', friendlyError, true);
             } finally {
-                input.disabled = false;
+                userInput.disabled = false;
                 sendBtn.disabled = false;
-                input.focus();
+                userInput.focus();
             }
         });
     </script>
