@@ -9,45 +9,43 @@
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
 
         :root {
+            --bg: #f0f4f9;
             --surface: #ffffff;
-            --background: #f0f4f9;
-            --primary: #1a73e8; /* Gemini Blue */
-            --primary-hover: #1557b0;
+            --primary: #1a73e8;
             --text-main: #1f1f1f;
             --text-sub: #444746;
             --border: #e3e3e3;
-            --user-bubble: #e8f0fe; /* Light Blue */
+            --bubble-user: #e8f0fe;
         }
 
         body {
-            background-color: var(--background);
+            background-color: var(--bg);
             color: var(--text-main);
             font-family: 'Inter', sans-serif;
             margin: 0;
             display: flex;
+            flex-direction: column;
             height: 100vh;
             overflow: hidden;
         }
 
-        /* Sidebar */
-        aside {
-            width: 280px;
-            background: var(--background);
+        /* HEADER & MODEL SWITCHING */
+        header {
+            background: var(--surface);
+            padding: 1rem 2rem;
             display: flex;
-            flex-direction: column;
-            padding: 1rem;
-            border-right: 1px solid transparent; /* Cleaner look */
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--border);
+            z-index: 10;
         }
 
         .brand {
-            font-size: 1.25rem;
+            font-size: 1.2rem;
             font-weight: 600;
-            color: var(--text-sub);
-            margin-bottom: 2rem;
             display: flex;
             align-items: center;
             gap: 0.5rem;
-            padding-left: 0.5rem;
         }
 
         .gradient-text {
@@ -56,234 +54,203 @@
             -webkit-text-fill-color: transparent;
         }
 
-        /* Model Selector */
-        .model-select-container {
-            position: relative;
-            background: #dde3ea;
-            border-radius: 12px;
-            margin-bottom: 1rem;
+        .controls {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
         }
 
         select {
-            width: 100%;
-            padding: 12px 16px;
-            border-radius: 12px;
-            border: none;
-            background: transparent;
-            font-size: 0.9rem;
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            font-family: inherit;
             color: var(--text-main);
+            background: var(--bg);
             cursor: pointer;
             outline: none;
-            appearance: none;
-            font-weight: 500;
+            min-width: 200px;
         }
 
-        select:hover {
-            background-color: rgba(255,255,255,0.5);
+        select:focus {
+            border-color: var(--primary);
         }
 
-        /* Main Chat */
-        main {
-            flex: 1;
-            background: var(--surface);
-            border-radius: 24px;
-            margin: 1rem 1rem 1rem 0;
-            display: flex;
-            flex-direction: column;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
-            position: relative;
-            overflow: hidden;
-        }
-
-        #chat-container {
-            flex: 1;
-            overflow-y: auto;
-            padding: 2rem 4rem;
-            scroll-behavior: smooth;
-        }
-
-        /* Messages */
-        .message {
-            margin-bottom: 1.5rem;
-            line-height: 1.6;
-            max-width: 800px;
-            margin-left: auto;
-            margin-right: auto;
-            animation: fadeIn 0.3s ease;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .message-header {
+        .proxy-toggle {
+            font-size: 0.8rem;
             display: flex;
             align-items: center;
-            gap: 0.75rem;
-            margin-bottom: 0.5rem;
-            font-size: 0.85rem;
-            font-weight: 600;
-            color: var(--text-main);
+            gap: 0.5rem;
+            color: var(--text-sub);
+            cursor: pointer;
         }
 
-        .icon-box {
-            width: 28px;
-            height: 28px;
+        /* CHAT AREA */
+        main {
+            flex: 1;
+            overflow-y: auto;
+            padding: 2rem;
+            scroll-behavior: smooth;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            max-width: 900px;
+            margin: 0 auto;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .message {
+            display: flex;
+            gap: 1rem;
+            animation: fadeIn 0.3s ease;
+            line-height: 1.6;
+        }
+
+        .icon {
+            width: 32px;
+            height: 32px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
+            flex-shrink: 0;
         }
-        
+
         .icon-ai { background: linear-gradient(135deg, #4285F4, #D96570); color: white; }
         .icon-user { background: #5f6368; color: white; }
 
-        .text-content {
-            font-size: 1rem;
-            color: var(--text-sub);
-            padding-left: 40px; /* Align with text not icon */
+        .content {
+            padding-top: 4px;
+        }
+        
+        .content strong {
+            display: block;
+            font-size: 0.85rem;
+            margin-bottom: 4px;
+            color: var(--text-main);
         }
 
-        .error-box {
+        .content p { margin: 0; color: var(--text-sub); }
+
+        .error-msg {
+            color: #d93025;
             background: #fce8e6;
-            color: #c5221f;
             padding: 1rem;
             border-radius: 8px;
-            margin-top: 0.5rem;
+            border: 1px solid #faddd9;
             font-size: 0.9rem;
         }
 
-        /* Input Area */
-        .input-area {
-            padding: 1.5rem 4rem;
+        /* INPUT AREA */
+        footer {
             background: var(--surface);
+            padding: 1.5rem;
+            border-top: 1px solid var(--border);
         }
 
-        .input-wrapper {
-            max-width: 800px;
+        .input-box {
+            max-width: 900px;
             margin: 0 auto;
-            background: #f0f4f9;
-            border-radius: 32px;
+            background: var(--bg);
+            border-radius: 24px;
             display: flex;
             align-items: center;
             padding: 8px 16px;
-            transition: background 0.2s;
+            border: 1px solid transparent;
+            transition: all 0.2s;
         }
 
-        .input-wrapper:focus-within {
-            background: #dde3ea;
+        .input-box:focus-within {
+            background: white;
+            border-color: var(--primary);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
         }
 
         input {
             flex: 1;
             border: none;
             background: transparent;
-            padding: 12px;
+            padding: 10px;
             font-size: 1rem;
             outline: none;
             color: var(--text-main);
         }
 
-        button#send-btn {
-            background: transparent;
+        button {
+            background: none;
             border: none;
+            color: var(--primary);
             cursor: pointer;
-            color: var(--text-sub);
             padding: 8px;
             border-radius: 50%;
-            transition: all 0.2s;
-        }
-
-        button#send-btn:hover {
-            background: rgba(0,0,0,0.05);
-            color: var(--primary);
+            transition: background 0.2s;
         }
         
-        button#send-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
+        button:hover { background: rgba(26,115,232,0.1); }
+        button:disabled { color: var(--text-sub); opacity: 0.5; cursor: not-allowed; }
 
-        /* Mobile Responsive */
-        @media (max-width: 768px) {
-            aside { display: none; } /* Hide sidebar on mobile */
-            main { margin: 0; border-radius: 0; }
-            #chat-container { padding: 1rem; }
-            .input-area { padding: 1rem; }
-            .text-content { padding-left: 0; margin-top: 0.5rem; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
         }
     </style>
 </head>
 <body>
 
-    <aside>
+    <header>
         <div class="brand">
             <i class="fa-solid fa-sparkles gradient-text"></i>
             <span>VincentAI</span>
         </div>
         
-        <div class="model-select-container">
-            <select id="model-select">
-                </select>
-        </div>
+        <div class="controls">
+            <select id="model-selector">
+                <option value="DeepSeek V3.2">DeepSeek V3.2</option>
+                <option value="Llama 3.3 70B Instruct">Llama 3.3 70B Instruct</option>
+                <option value="Qwen3 30B">Qwen3 30B</option>
+                <option value="GPT-4o mini">GPT-4o mini</option>
+                <option value="Gemma 3 12B">Gemma 3 12B</option>
+                <option value="Gemma2 9B">Gemma2 9B</option>
+                <option value="GPT-4.1 Nano">GPT-4.1 Nano</option>
+            </select>
 
-        <div style="margin-top: auto; font-size: 0.75rem; color: #757575;">
-            <p><strong>Note:</strong> Browser security (CORS) may block requests. A local proxy is recommended for stability.</p>
+            <label class="proxy-toggle" title="Attempts to bypass CORS using corsproxy.io">
+                <input type="checkbox" id="proxy-switch">
+                Enable Proxy Mode
+            </label>
         </div>
-    </aside>
+    </header>
 
-    <main>
-        <div id="chat-container">
-            <div class="message">
-                <div class="message-header">
-                    <div class="icon-box icon-ai"><i class="fa-solid fa-sparkles text-xs"></i></div>
-                    <span>VincentAI</span>
-                </div>
-                <div class="text-content">
-                    Hello. I am ready to assist you using the DeepAI engine.
-                </div>
+    <main id="chat-container">
+        <div class="message">
+            <div class="icon icon-ai"><i class="fa-solid fa-robot"></i></div>
+            <div class="content">
+                <strong>VincentAI</strong>
+                <p>System Online. Select a model from the top right.</p>
             </div>
-        </div>
-
-        <div class="input-area">
-            <form id="chat-form" class="input-wrapper">
-                <input type="text" id="user-input" placeholder="Ask anything..." autocomplete="off">
-                <button type="submit" id="send-btn">
-                    <i class="fa-solid fa-paper-plane"></i>
-                </button>
-            </form>
         </div>
     </main>
 
-    <script>
-        // --- CONFIGURATION ---
-        const CONFIG = {
-            url: "https://api.deepai.org/hacking_is_a_serious_crime",
-            models: [
-                "DeepSeek V3.2",
-                "Llama 3.3 70B Instruct",
-                "Qwen3 30B",
-                "GPT-4o mini",
-                "Gemma 3 12B",
-                "Gemma2 9B",
-                "GPT-4.1 Nano"
-            ]
-        };
+    <footer>
+        <form id="chat-form" class="input-box">
+            <input type="text" id="user-input" placeholder="Message VincentAI..." autocomplete="off">
+            <button type="submit" id="send-btn"><i class="fa-solid fa-paper-plane"></i></button>
+        </form>
+    </footer>
 
+    <script>
+        // --- LOGIC ---
         const chatContainer = document.getElementById('chat-container');
         const chatForm = document.getElementById('chat-form');
         const userInput = document.getElementById('user-input');
         const sendBtn = document.getElementById('send-btn');
-        const modelSelect = document.getElementById('model-select');
+        const modelSelector = document.getElementById('model-selector');
+        const proxySwitch = document.getElementById('proxy-switch');
 
-        // Init Models
-        CONFIG.models.forEach(model => {
-            const opt = document.createElement('option');
-            opt.value = model;
-            opt.textContent = model;
-            modelSelect.appendChild(opt);
-        });
+        // Config from freedeepai.py
+        const API_URL = "https://api.deepai.org/hacking_is_a_serious_crime";
+        const API_KEY = "tryit-48957598737-7bf6498cad4adf00c76eb3dfa97dc26d";
 
         function appendMessage(role, text, isError = false) {
             const div = document.createElement('div');
@@ -291,63 +258,75 @@
             
             const name = role === 'user' ? 'You' : 'VincentAI';
             const iconClass = role === 'user' ? 'icon-user' : 'icon-ai';
-            const icon = role === 'user' ? '<i class="fa-solid fa-user text-xs"></i>' : '<i class="fa-solid fa-sparkles text-xs"></i>';
-
-            let contentHtml = `<div class="text-content">${text}</div>`;
+            const icon = role === 'user' ? '<i class="fa-solid fa-user"></i>' : '<i class="fa-solid fa-robot"></i>';
+            
+            let contentHtml = `<p>${text}</p>`;
             if (isError) {
-                contentHtml = `<div class="text-content"><div class="error-box">${text}</div></div>`;
+                contentHtml = `<div class="error-msg"><strong>Connection Error:</strong> ${text}</div>`;
             }
 
             div.innerHTML = `
-                <div class="message-header">
-                    <div class="icon-box ${iconClass}">${icon}</div>
-                    <span>${name}</span>
+                <div class="icon ${iconClass}">${icon}</div>
+                <div class="content">
+                    <strong>${name}</strong>
+                    ${contentHtml}
                 </div>
-                ${contentHtml}
             `;
             
             chatContainer.appendChild(div);
             chatContainer.scrollTop = chatContainer.scrollHeight;
+            return div;
         }
 
-        async function sendMessage(message, model) {
-            // Using FormData as implied by payload structure in python script
+        async function sendMessage(message) {
+            // 1. Get Selected Model
+            const selectedModel = modelSelector.value;
+            console.log("Using Model:", selectedModel);
+
+            // 2. Prepare Data (FormData is safer for some proxies than JSON)
             const formData = new FormData();
             formData.append('chat_style', 'chat');
             formData.append('chatHistory', JSON.stringify([{ role: "user", content: message }]));
-            formData.append('model', model);
+            formData.append('model', selectedModel);
             formData.append('enabled_tools', JSON.stringify(["image_generator", "image_editor"]));
             
-            // "hacker_is_stinky" is used in the Python script. 
-            // We append it to body to avoid header preflight issues if possible.
+            // "hacker_is_stinky" from python script payload
             formData.append('hacker_is_stinky', 'very_stinky');
 
-            // Headers: Removed 'Origin' and 'Referer' to prevent browser blocking.
-            // Kept 'api-key' as it is essential for the API.
-            const headers = {
-                "api-key": "tryit-48957598737-7bf6498cad4adf00c76eb3dfa97dc26d",
-                // "User-Agent" is set automatically by the browser
-            };
+            // 3. Determine URL (Direct vs Proxy)
+            let targetUrl = API_URL;
+            if (proxySwitch.checked) {
+                // Prepend a public proxy to try and bypass CORS
+                targetUrl = "https://corsproxy.io/?" + encodeURIComponent(API_URL);
+            }
 
+            // 4. Send Request
             try {
-                const response = await fetch(CONFIG.url, {
+                const response = await fetch(targetUrl, {
                     method: 'POST',
-                    headers: headers,
+                    headers: {
+                        "api-key": API_KEY,
+                        // Note: We cannot send 'Origin' or 'Referer' here.
+                        // Browsers block them. Only a local Python script can send those.
+                    },
                     body: formData
                 });
 
                 if (!response.ok) {
-                    throw new Error(`API Error: ${response.status}`);
+                    throw new Error(`Server Status ${response.status} (${response.statusText})`);
                 }
 
                 return await response.text();
 
             } catch (error) {
-                // If this fails, it's 99% likely due to CORS
-                if (error.name === 'TypeError' || error.message.includes('Failed to fetch')) {
-                    throw new Error("Connection Blocked by Browser (CORS). The Python script works because it ignores browser security. To fix this in a browser, you need a proxy.");
+                console.error(error);
+                let msg = error.message;
+                
+                // Specific help for the common error
+                if (msg.includes('Failed to fetch') || msg.includes('NetworkError')) {
+                    msg = "Browser Security Block (CORS). <br><br>The 'freedeepai.py' script relies on spoofing headers that browsers strictly forbid. <br><strong>Try enabling the 'Proxy Mode' checkbox above.</strong> <br>If that fails, you must install a 'CORS Unblocker' browser extension.";
                 }
-                throw error;
+                throw new Error(msg);
             }
         }
 
@@ -356,28 +335,21 @@
             const text = userInput.value.trim();
             if (!text) return;
 
-            // Lock UI
+            // UI Updates
             userInput.value = '';
             userInput.disabled = true;
             sendBtn.disabled = true;
-
+            
             appendMessage('user', text);
 
-            // Simple loading state
+            // Loading indicator
             const loadingDiv = document.createElement('div');
             loadingDiv.className = "message";
-            loadingDiv.innerHTML = `
-                <div class="message-header">
-                    <div class="icon-box icon-ai"><i class="fa-solid fa-sparkles text-xs"></i></div>
-                    <span>VincentAI</span>
-                </div>
-                <div class="text-content" style="color: #9aa0a6;">Thinking...</div>
-            `;
+            loadingDiv.innerHTML = `<div class="icon icon-ai"><i class="fa-solid fa-spinner fa-spin"></i></div><div class="content"><p>Thinking...</p></div>`;
             chatContainer.appendChild(loadingDiv);
 
             try {
-                const model = modelSelect.value;
-                const response = await sendMessage(text, model);
+                const response = await sendMessage(text);
                 loadingDiv.remove();
                 appendMessage('ai', response);
             } catch (err) {
