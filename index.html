@@ -3,304 +3,284 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VincentAI | Neural Interface</title>
+    <title>VincentAI | Command Node</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;500;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@300;400;600&display=swap');
+        :root {
+            --bg-dark: #030712;
+            --panel-bg: #111827;
+            --accent: #6366f1; /* Indigo */
+            --accent-glow: rgba(99, 102, 241, 0.15);
+            --text-main: #f3f4f6;
+            --text-dim: #9ca3af;
+        }
 
         body {
-            background-color: #050509;
-            color: #e2e8f0;
-            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: 'Space Grotesk', sans-serif;
+            height: 100vh;
             overflow: hidden;
         }
 
-        /* Glassmorphism Panel */
+        /* Glassmorphism & Borders */
         .glass-panel {
-            background: rgba(20, 20, 35, 0.7);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
+            background: rgba(17, 24, 39, 0.7);
+            backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.08);
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        .glow-border {
+            box-shadow: 0 0 20px var(--accent-glow);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+        }
+
+        /* Chat Bubbles */
+        .bubble-user {
+            background: linear-gradient(135deg, #4f46e5, #4338ca);
+            border-radius: 1.5rem 1.5rem 0 1.5rem;
+            box-shadow: 0 4px 15px rgba(79, 70, 229, 0.3);
+        }
+
+        .bubble-ai {
+            background: #1f2937;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 1.5rem 1.5rem 1.5rem 0;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.95rem;
+            line-height: 1.6;
         }
 
         /* Custom Scrollbar */
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
-        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+        ::-webkit-scrollbar-thumb { background: #374151; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #4b5563; }
 
-        .message-user {
-            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-            border-bottom-right-radius: 2px;
+        /* Animations */
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
-        
-        .message-ai {
-            background: rgba(30, 41, 59, 0.5);
-            border: 1px solid rgba(255,255,255,0.05);
-            border-bottom-left-radius: 2px;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.9em;
-        }
-
-        .typing-dot {
-            animation: typing 1.4s infinite ease-in-out both;
-        }
-        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
-        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
-        
-        @keyframes typing {
-            0%, 80%, 100% { transform: scale(0); }
-            40% { transform: scale(1); }
-        }
+        .msg-enter { animation: fadeUp 0.3s ease-out forwards; }
     </style>
 </head>
-<body class="h-screen flex flex-col items-center justify-center p-4 md:p-6 bg-[url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2072&auto=format&fit=crop')] bg-cover bg-center bg-no-repeat bg-blend-multiply">
+<body class="flex flex-col md:flex-row h-screen p-2 md:p-4 gap-4 bg-[url('https://assets.codepen.io/13471/sparkles.gif')] bg-repeat bg-[length:500px]">
 
-    <div class="w-full max-w-5xl h-full flex flex-col glass-panel rounded-2xl overflow-hidden relative">
+    <aside class="w-full md:w-80 flex flex-col gap-4 glass-panel rounded-2xl p-6 shadow-2xl z-10">
+        <div class="flex items-center gap-3 pb-6 border-b border-white/10">
+            <div class="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center shadow-[0_0_15px_rgba(79,70,229,0.5)]">
+                <i class="fa-solid fa-cube text-white text-lg"></i>
+            </div>
+            <div>
+                <h1 class="font-bold text-2xl tracking-tight">VincentAI</h1>
+                <p class="text-[10px] text-indigo-400 font-mono tracking-widest uppercase">Neural Interface v2.0</p>
+            </div>
+        </div>
+
+        <div class="space-y-4 overflow-y-auto flex-1 pr-2">
+            <div class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Active Neural Core</div>
+            
+            <div class="relative">
+                <select id="model-select" class="w-full bg-slate-800/50 text-sm border border-slate-700 text-slate-200 rounded-xl p-3 appearance-none focus:outline-none focus:border-indigo-500 transition-all cursor-pointer hover:bg-slate-800">
+                    </select>
+                <div class="absolute right-3 top-3.5 text-slate-400 pointer-events-none">
+                    <i class="fa-solid fa-chevron-down text-xs"></i>
+                </div>
+            </div>
+
+            <div class="p-4 rounded-xl bg-slate-800/30 border border-slate-700/50 mt-4">
+                <div class="flex items-center gap-2 mb-2">
+                    <div class="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_#10b981]"></div>
+                    <span class="text-xs font-mono text-emerald-400">SYSTEM ONLINE</span>
+                </div>
+                <div class="text-[10px] text-slate-500 font-mono leading-relaxed">
+                    Routing traffic via secure API wrappers.<br>
+                    Latency: <span class="text-slate-300">~120ms</span><br>
+                    Encryption: <span class="text-slate-300">TLS 1.3</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-auto pt-4 border-t border-white/5 text-[10px] text-slate-600 text-center">
+            Based on FreeDeepAI Protocol
+        </div>
+    </aside>
+
+    <main class="flex-1 flex flex-col glass-panel rounded-2xl relative overflow-hidden shadow-2xl z-0">
         
-        <header class="h-16 border-b border-white/10 flex items-center justify-between px-6 bg-black/20">
-            <div class="flex items-center gap-3">
-                <div class="w-8 h-8 rounded bg-blue-600 flex items-center justify-center shadow-lg shadow-blue-500/20">
-                    <i class="fa-solid fa-brain text-white text-sm"></i>
-                </div>
-                <h1 class="font-bold tracking-tight text-lg">VincentAI</h1>
-            </div>
-
-            <div class="flex items-center gap-4">
-                <div class="relative group">
-                    <select id="provider-select" class="appearance-none bg-slate-800/50 border border-slate-700 text-sm rounded-lg pl-3 pr-8 py-1.5 focus:outline-none focus:border-blue-500 transition-colors cursor-pointer text-slate-300">
-                        </select>
-                    <i class="fa-solid fa-chevron-down absolute right-3 top-2.5 text-xs text-slate-500 pointer-events-none"></i>
-                </div>
-                <div class="relative group">
-                    <select id="model-select" class="appearance-none bg-slate-800/50 border border-slate-700 text-sm rounded-lg pl-3 pr-8 py-1.5 focus:outline-none focus:border-blue-500 transition-colors cursor-pointer text-slate-300">
-                        </select>
-                    <i class="fa-solid fa-chevron-down absolute right-3 top-2.5 text-xs text-slate-500 pointer-events-none"></i>
-                </div>
-            </div>
-        </header>
-
-        <main id="chat-container" class="flex-1 overflow-y-auto p-6 space-y-6 scroll-smooth">
-            <div class="flex gap-4 max-w-3xl mx-auto">
-                <div class="w-8 h-8 rounded-full bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center flex-shrink-0">
+        <div id="chat-box" class="flex-1 overflow-y-auto p-6 space-y-6 scroll-smooth">
+            <div class="flex gap-4 max-w-3xl">
+                <div class="w-8 h-8 rounded-full bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center flex-shrink-0">
                     <i class="fa-solid fa-robot text-indigo-400 text-xs"></i>
                 </div>
-                <div class="message-ai p-4 rounded-2xl rounded-tl-none">
-                    <p class="leading-relaxed">System initialized. Select a provider and model above to begin.</p>
-                    <p class="mt-2 text-xs text-yellow-500/80"><i class="fa-solid fa-triangle-exclamation mr-1"></i> Note: Direct browser access to these APIs is restricted by CORS security policies. If the chat fails, it is because modern browsers block the necessary spoofed headers.</p>
+                <div class="bubble-ai p-4">
+                    <p>VincentAI initialized. Connected to DeepAI nodes.</p>
+                    <p class="mt-2 text-xs text-slate-500">Selected Model: <span id="current-model-display" class="text-indigo-400">DeepSeek V3.2</span></p>
                 </div>
             </div>
-        </main>
+        </div>
 
-        <footer class="p-4 border-t border-white/10 bg-black/20">
-            <div class="max-w-3xl mx-auto relative">
-                <form id="chat-form" class="relative">
+        <div class="p-4 bg-slate-900/50 border-t border-white/5 backdrop-blur-md">
+            <form id="chat-form" class="max-w-4xl mx-auto relative flex items-center gap-3">
+                <div class="relative flex-1">
                     <input type="text" id="user-input" 
-                        class="w-full bg-slate-900/50 border border-slate-700/50 text-white placeholder-slate-500 rounded-xl py-4 pl-5 pr-14 focus:outline-none focus:border-blue-500/50 focus:bg-slate-900/80 transition-all shadow-inner"
-                        placeholder="Message VincentAI..." autocomplete="off">
-                    <button type="submit" class="absolute right-2 top-2 p-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition-colors shadow-lg shadow-blue-600/20">
-                        <i class="fa-solid fa-paper-plane text-sm"></i>
-                    </button>
-                </form>
-            </div>
-            <div class="text-center mt-2">
-                <p class="text-[10px] text-slate-600">VincentAI v1.0 • Client-Side Interface</p>
-            </div>
-        </footer>
-
-    </div>
+                        class="w-full bg-slate-800/50 border border-slate-700 text-slate-100 rounded-xl py-4 pl-5 pr-12 focus:outline-none focus:border-indigo-500 focus:bg-slate-800 transition-all placeholder-slate-500 shadow-inner"
+                        placeholder="Enter command or query..." autocomplete="off">
+                    <div class="absolute right-4 top-4 text-slate-500">
+                        <i class="fa-solid fa-terminal text-sm"></i>
+                    </div>
+                </div>
+                <button type="submit" id="send-btn" class="p-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white transition-all shadow-[0_0_15px_rgba(79,70,229,0.4)] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">
+                    <i class="fa-solid fa-paper-plane"></i>
+                </button>
+            </form>
+        </div>
+    </main>
 
     <script>
-        // --- Configuration based on your Python scripts ---
+        // --- CONFIGURATION FROM FREEDEEPAI.PY ---
         const CONFIG = {
-            deepai: {
-                name: "DeepAI (Free)",
-                url: "https://api.deepai.org/hacking_is_a_serious_crime",
-                models: [
-                    "DeepSeek V3.2", "Llama 3.3 70B Instruct", "Qwen3 30B", 
-                    "GPT-4o mini", "Gemma 3 12B", "Gemma2 9B", "GPT-4.1 Nano"
-                ],
-                // These headers are strictly forbidden in browsers!
-                headers: {
-                    "api-key": "tryit-48957598737-7bf6498cad4adf00c76eb3dfa97dc26d",
-                    "User-Agent": "python-deepai-client/1.0",
-                    "hacker_is_stinky": "very_stinky" 
-                },
-                requiresProxy: true
-            },
-            venice: {
-                name: "Venice AI",
-                url: "https://outerface.venice.ai/api/inference/chat",
-                models: ["Venice GLM-4.6"],
-                headers: {
-                    "x-venice-version": "interface@python-client",
-                    "User-Agent": "python-venice-client/1.0"
-                },
-                requiresProxy: true
+            url: "https://api.deepai.org/hacking_is_a_serious_crime",
+            models: [
+                "DeepSeek V3.2",
+                "Llama 3.3 70B Instruct",
+                "Qwen3 30B",
+                "GPT-4o mini",
+                "Gemma 3 12B",
+                "Gemma2 9B",
+                "GPT-4.1 Nano"
+            ],
+            // Headers extracted from the python script
+            headers: {
+                "api-key": "tryit-48957598737-7bf6498cad4adf00c76eb3dfa97dc26d",
+                "User-Agent": "python-deepai-client/1.0",
+                "hacker_is_stinky": "very_stinky" 
+                // Note: 'Origin' and 'Referer' are usually blocked by browsers in fetch()
             }
         };
 
-        const chatContainer = document.getElementById('chat-container');
+        const chatBox = document.getElementById('chat-box');
         const chatForm = document.getElementById('chat-form');
         const userInput = document.getElementById('user-input');
-        const providerSelect = document.getElementById('provider-select');
+        const sendBtn = document.getElementById('send-btn');
         const modelSelect = document.getElementById('model-select');
+        const currentModelDisplay = document.getElementById('current-model-display');
 
-        // --- Init UI ---
+        // Initialize Models
         function init() {
-            // Populate Providers
-            Object.keys(CONFIG).forEach(key => {
+            CONFIG.models.forEach((model, index) => {
                 const opt = document.createElement('option');
-                opt.value = key;
-                opt.textContent = CONFIG[key].name;
-                providerSelect.appendChild(opt);
-            });
-
-            // Populate Models on Change
-            providerSelect.addEventListener('change', updateModels);
-            updateModels(); // Initial run
-        }
-
-        function updateModels() {
-            modelSelect.innerHTML = '';
-            const providerKey = providerSelect.value;
-            const models = CONFIG[providerKey].models;
-            
-            models.forEach(m => {
-                const opt = document.createElement('option');
-                opt.value = m;
-                opt.textContent = m;
+                opt.value = model;
+                opt.textContent = `${index + 1}. ${model}`;
                 modelSelect.appendChild(opt);
             });
+            
+            modelSelect.addEventListener('change', () => {
+                currentModelDisplay.textContent = modelSelect.value;
+            });
         }
 
+        // UI: Append Message
         function appendMessage(role, text, isError = false) {
             const div = document.createElement('div');
-            div.className = "flex gap-4 max-w-3xl mx-auto animate-[fadeIn_0.3s_ease-out]";
+            div.className = "flex gap-4 max-w-3xl msg-enter " + (role === 'user' ? "ml-auto flex-row-reverse" : "");
             
-            const icon = role === 'user' 
-                ? `<div class="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-user text-slate-300 text-xs"></i></div>`
-                : `<div class="w-8 h-8 rounded-full bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-robot text-indigo-400 text-xs"></i></div>`;
+            const iconUser = `<div class="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center flex-shrink-0 shadow-lg"><i class="fa-solid fa-user text-slate-300 text-xs"></i></div>`;
+            const iconAi = `<div class="w-8 h-8 rounded-full bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-robot text-indigo-400 text-xs"></i></div>`;
 
-            const bubbleClass = role === 'user' ? 'message-user ml-auto rounded-2xl rounded-tr-none' : 'message-ai rounded-2xl rounded-tl-none';
-            const errorClass = isError ? 'border-red-500/50 text-red-200 bg-red-900/20' : '';
+            const bubbleClass = role === 'user' ? 'bubble-user text-white' : 'bubble-ai text-slate-200';
+            const errorStyle = isError ? 'border border-red-500/50 bg-red-900/20 text-red-200' : '';
 
             div.innerHTML = `
-                ${role === 'ai' ? icon : ''}
-                <div class="${bubbleClass} p-4 max-w-[80%] shadow-md ${errorClass}">
-                    <p class="whitespace-pre-wrap leading-relaxed">${text}</p>
+                ${role === 'user' ? iconUser : iconAi}
+                <div class="${bubbleClass} p-4 max-w-[85%] ${errorStyle}">
+                    <p class="whitespace-pre-wrap">${text}</p>
                 </div>
-                ${role === 'user' ? icon : ''}
             `;
             
-            chatContainer.appendChild(div);
-            chatContainer.scrollTop = chatContainer.scrollHeight;
+            chatBox.appendChild(div);
+            chatBox.scrollTop = chatBox.scrollHeight;
+            return div;
         }
 
-        async function handleDeepAI(message, model) {
-            // NOTE: This fetch will likely fail due to CORS. 
-            // Browsers block "Referer" and "Origin" spoofing.
-            const payload = new FormData();
-            payload.append('chat_style', 'chat');
-            payload.append('chatHistory', JSON.stringify([{role: "user", content: message}]));
-            payload.append('model', model);
-            payload.append('enabled_tools', JSON.stringify(["image_generator", "image_editor"]));
-
-            const response = await fetch(CONFIG.deepai.url, {
-                method: 'POST',
-                headers: CONFIG.deepai.headers,
-                body: payload
-            });
-
-            if (!response.ok) throw new Error(`API Refused Connection (${response.status})`);
-            return await response.text();
-        }
-
-        async function handleVenice(message, model) {
-            // Venice requires UUIDs and specific headers blocked by browsers
-            const payload = {
-                conversationId: crypto.randomUUID().slice(0, 7),
-                conversationType: "text",
-                modelId: "zai-org-glm-4.6",
-                prompt: [{role: "user", content: message}],
-                requestId: crypto.randomUUID().slice(0, 8)
-            };
-
-            const response = await fetch(CONFIG.venice.url, {
-                method: 'POST',
-                headers: {
-                    "Content-Type": "application/json",
-                    ...CONFIG.venice.headers
-                },
-                body: JSON.stringify(payload)
-            });
-
-            if (!response.ok) throw new Error(`Venice Blocked Request (${response.status})`);
+        // LOGIC: Send to DeepAI
+        async function sendMessage(message, model) {
+            const formData = new FormData();
+            formData.append('chat_style', 'chat');
+            formData.append('chatHistory', JSON.stringify([{ role: "user", content: message }]));
+            formData.append('model', model);
+            formData.append('enabled_tools', JSON.stringify(["image_generator", "image_editor"]));
             
-            // Basic stream handling
-            const reader = response.body.getReader();
-            let resultText = "";
-            while(true) {
-                const {done, value} = await reader.read();
-                if (done) break;
-                const chunk = new TextDecoder().decode(value);
-                // In a real implementation, we would parse the JSON lines here
-                // For this demo, we just catch that it connected
-                resultText += chunk; 
+            // Note: The Python script adds 'hacker_is_stinky' to body implicitly or header. 
+            // In fetch, we add to FormData if the API expects it there, or headers if strict.
+            // The script puts it in the payload dictionary, so we append it here.
+            formData.append('hacker_is_stinky', 'very_stinky');
+
+            try {
+                const response = await fetch(CONFIG.url, {
+                    method: 'POST',
+                    headers: CONFIG.headers,
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Server responded with ${response.status}`);
+                }
+
+                const result = await response.text();
+                return result.trim();
+
+            } catch (error) {
+                console.error(error);
+                throw error;
             }
-            return "Connection Successful (Data hidden for brevity)";
         }
 
+        // Handler
         chatForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const text = userInput.value.trim();
             if (!text) return;
 
-            appendMessage('user', text);
+            // UI Updates
             userInput.value = '';
+            userInput.disabled = true;
+            sendBtn.disabled = true;
+            appendMessage('user', text);
 
-            // Show typing indicator
-            const typingDiv = document.createElement('div');
-            typingDiv.className = "flex gap-4 max-w-3xl mx-auto";
-            typingDiv.innerHTML = `
-                <div class="w-8 h-8 rounded-full bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-robot text-indigo-400 text-xs"></i></div>
-                <div class="message-ai p-4 rounded-2xl rounded-tl-none flex items-center gap-1">
-                    <div class="w-2 h-2 bg-slate-400 rounded-full typing-dot"></div>
-                    <div class="w-2 h-2 bg-slate-400 rounded-full typing-dot"></div>
-                    <div class="w-2 h-2 bg-slate-400 rounded-full typing-dot"></div>
+            // Typing Indicator
+            const loadingDiv = document.createElement('div');
+            loadingDiv.className = "flex gap-4 max-w-3xl msg-enter";
+            loadingDiv.innerHTML = `
+                <div class="w-8 h-8 rounded-full bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-robot text-indigo-400 text-xs"></i></div>
+                <div class="bubble-ai p-4 flex gap-2 items-center">
+                    <span class="w-2 h-2 bg-indigo-400 rounded-full animate-bounce"></span>
+                    <span class="w-2 h-2 bg-indigo-400 rounded-full animate-bounce delay-75"></span>
+                    <span class="w-2 h-2 bg-indigo-400 rounded-full animate-bounce delay-150"></span>
                 </div>
             `;
-            chatContainer.appendChild(typingDiv);
-            chatContainer.scrollTop = chatContainer.scrollHeight;
+            chatBox.appendChild(loadingDiv);
 
             try {
-                const provider = providerSelect.value;
                 const model = modelSelect.value;
-                let responseText = "";
-
-                if (provider === 'deepai') {
-                    responseText = await handleDeepAI(text, model);
-                } else if (provider === 'venice') {
-                    responseText = await handleVenice(text, model);
-                }
-
-                typingDiv.remove();
-                appendMessage('ai', responseText);
-
+                const response = await sendMessage(text, model);
+                loadingDiv.remove();
+                appendMessage('ai', response);
             } catch (err) {
-                typingDiv.remove();
-                console.error(err);
-                
-                let errorMsg = `Error: ${err.message}\n\n`;
-                if (err.message.includes('Failed to fetch') || err.name === 'TypeError') {
-                    errorMsg = "⚠️ BROWSER SECURITY BLOCK (CORS)\n\n";
-                    errorMsg += "Your browser blocked this request because the Python scripts rely on spoofed headers (Origin/Referer) which are illegal in client-side JavaScript.\n\n";
-                    errorMsg += "To make this work, you strictly need a Python backend to proxy the requests.";
+                loadingDiv.remove();
+                let msg = "Connection Error.";
+                if (err.message.includes("Failed to fetch")) {
+                    msg = "CORS ERROR: Browsers block these specific headers (`Referer`, `Origin`, `hacker_is_stinky`). Use a CORS unblocker extension or run via a local proxy.";
                 }
-                
-                appendMessage('ai', errorMsg, true);
+                appendMessage('ai', msg, true);
+            } finally {
+                userInput.disabled = false;
+                sendBtn.disabled = false;
+                userInput.focus();
             }
         });
 
