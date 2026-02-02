@@ -3,31 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gemini Pro Interface</title>
+    <title>Unified AI Interface</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    
+
     <style>
-        /* --- THEME CONFIG --- */
+        /* --- DARK THEME STYLING --- */
         :root {
             --bg-body: #131314;
             --bg-sidebar: #1e1f20;
             --bg-input: #2d2e2f;
-            --bg-message-user: #2d2e2f;
             --text-primary: #e3e3e3;
             --text-secondary: #a8a8a8;
-            --accent-blue: #4b90ff;
-            --accent-gradient: linear-gradient(135deg, #4b90ff 0%, #ff5546 100%);
-            --border-light: #444;
-            --font-main: 'Inter', sans-serif;
+            --accent: #4b90ff;
+            --border: #444;
+            --font: 'Inter', sans-serif;
         }
-
-        * { box-sizing: border-box; }
 
         body {
             margin: 0;
-            font-family: var(--font-main);
+            font-family: var(--font);
             background-color: var(--bg-body);
             color: var(--text-primary);
             display: flex;
@@ -35,59 +31,33 @@
             overflow: hidden;
         }
 
-        /* --- SIDEBAR --- */
+        /* Sidebar */
         .sidebar {
             width: 280px;
             background-color: var(--bg-sidebar);
             display: flex;
             flex-direction: column;
             border-right: 1px solid #333;
-            transition: transform 0.3s ease;
+            padding: 20px;
+            gap: 20px;
         }
 
-        .sidebar-header {
-            padding: 20px;
+        .brand {
             font-size: 1.2rem;
             font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 10px;
             color: var(--text-primary);
-        }
-        
-        .new-chat-btn {
-            margin: 0 15px 20px;
-            padding: 12px;
-            background: #28292a;
-            border: 1px solid #3c4043;
-            border-radius: 20px;
-            color: var(--text-secondary);
-            cursor: pointer;
             display: flex;
             align-items: center;
             gap: 10px;
-            font-size: 0.9rem;
-            transition: all 0.2s;
-        }
-        .new-chat-btn:hover { background: #303133; color: var(--text-primary); }
-
-        .settings-area {
-            padding: 20px;
-            border-top: 1px solid #333;
-            margin-top: auto;
         }
 
-        .setting-item {
-            margin-bottom: 15px;
-        }
-
-        .setting-label {
+        .control-group label {
             font-size: 0.75rem;
             text-transform: uppercase;
-            letter-spacing: 0.05em;
             color: #888;
-            margin-bottom: 8px;
+            font-weight: 600;
             display: block;
+            margin-bottom: 8px;
         }
 
         select {
@@ -95,16 +65,14 @@
             padding: 10px;
             background-color: var(--bg-input);
             color: white;
-            border: 1px solid var(--border-light);
+            border: 1px solid var(--border);
             border-radius: 8px;
-            font-family: var(--font-main);
-            font-size: 0.9rem;
+            font-family: var(--font);
             outline: none;
             cursor: pointer;
         }
-        select:hover { border-color: #666; }
 
-        /* --- MAIN CHAT AREA --- */
+        /* Main Chat */
         .main-content {
             flex: 1;
             display: flex;
@@ -119,91 +87,60 @@
             display: flex;
             flex-direction: column;
             gap: 24px;
-            max-width: 850px;
+            max-width: 900px;
             margin: 0 auto;
             width: 100%;
-            padding-bottom: 160px; /* Space for input */
+            padding-bottom: 140px;
             scroll-behavior: smooth;
         }
 
-        /* Messages */
         .message {
             display: flex;
             gap: 20px;
             line-height: 1.6;
-            font-size: 1rem;
             animation: fadeIn 0.3s ease;
         }
-
+        
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
         .avatar {
-            width: 32px;
-            height: 32px;
+            width: 36px;
+            height: 36px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 14px;
             flex-shrink: 0;
-            margin-top: 4px;
         }
-        .avatar.ai { background: var(--accent-gradient); color: white; box-shadow: 0 2px 8px rgba(75, 144, 255, 0.3); }
+        .avatar.ai { background: linear-gradient(135deg, #4b90ff, #ff5546); color: white; }
         .avatar.user { background-color: #3c4043; color: #e3e3e3; }
 
-        .content { 
-            flex: 1; 
-            min-width: 0;
-        }
-        
-        .content p { margin-top: 0; }
-        .content code {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-family: 'Courier New', monospace;
-            font-size: 0.9em;
-        }
-        .content pre {
-            background: #1e1e1e;
-            padding: 15px;
-            border-radius: 10px;
-            overflow-x: auto;
-            border: 1px solid #333;
-            margin: 15px 0;
-        }
-        .content pre code { background: transparent; padding: 0; }
+        .content { flex: 1; min-width: 0; }
+        .content pre { background: #1e1e1e; padding: 15px; border-radius: 8px; overflow-x: auto; border: 1px solid #333; }
+        .content code { background: rgba(255,255,255,0.1); padding: 2px 5px; border-radius: 4px; font-family: monospace; }
 
-        /* --- INPUT AREA --- */
+        /* Input Area */
         .input-area {
             position: absolute;
             bottom: 0;
             left: 0;
             right: 0;
-            padding: 40px 20px;
+            padding: 30px;
             background: linear-gradient(to top, var(--bg-body) 70%, transparent);
             display: flex;
             justify-content: center;
-            z-index: 10;
         }
 
-        .input-container {
+        .input-box {
             width: 100%;
             max-width: 800px;
             background-color: var(--bg-input);
-            border-radius: 32px;
+            border-radius: 30px;
             padding: 8px 8px 8px 20px;
             display: flex;
             align-items: center;
-            border: 1px solid var(--border-light);
-            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
-            transition: all 0.2s;
-        }
-
-        .input-container:focus-within {
-            background-color: #333436;
-            border-color: #5f6368;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+            border: 1px solid var(--border);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
         }
 
         input[type="text"] {
@@ -211,83 +148,58 @@
             background: transparent;
             border: none;
             color: white;
-            padding: 12px 0;
+            padding: 10px 0;
             font-size: 1rem;
             outline: none;
-            font-family: var(--font-main);
         }
 
         .send-btn {
-            width: 44px;
-            height: 44px;
+            width: 40px;
+            height: 40px;
             border-radius: 50%;
-            background: transparent;
             border: none;
+            background: transparent;
             color: var(--text-secondary);
             cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             transition: all 0.2s;
         }
-        
-        .send-btn:hover { background-color: #3c4043; color: var(--text-primary); }
-        .send-btn.active { background-color: var(--text-primary); color: var(--bg-body); }
+        .send-btn:hover { background: #3c4043; color: white; }
+        .send-btn.active { background: var(--text-primary); color: var(--bg-body); }
 
-        /* --- STATUS BADGES --- */
         .badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 4px 10px;
-            border-radius: 12px;
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
             font-size: 0.75rem;
-            font-weight: 500;
             margin-top: 5px;
+            background: #2d2e2f;
+            color: #888;
         }
-        .badge.warning { background: rgba(255, 170, 70, 0.15); color: #ffaa46; border: 1px solid rgba(255, 170, 70, 0.3); }
-        .badge.error { background: rgba(255, 85, 70, 0.15); color: #ff5546; border: 1px solid rgba(255, 85, 70, 0.3); }
+        .badge.error { background: rgba(255, 85, 70, 0.1); color: #ff5546; border: 1px solid #ff5546; }
 
-        /* Mobile Responsive */
-        @media (max-width: 768px) {
-            .sidebar { display: none; position: absolute; height: 100%; z-index: 20; }
-            .sidebar.open { display: flex; }
-            .mobile-menu-btn { display: block; }
-        }
     </style>
 </head>
 <body>
 
-    <div class="sidebar" id="sidebar">
-        <div class="sidebar-header">
-            <i class="fa-solid fa-sparkles" style="color: #4b90ff;"></i> Gemini UI
-        </div>
+    <div class="sidebar">
+        <div class="brand"><i class="fa-solid fa-layer-group"></i> Unified AI</div>
         
-        <button class="new-chat-btn" onclick="location.reload()">
-            <i class="fa-solid fa-plus"></i> New Chat
-        </button>
-
-        <div style="flex:1"></div>
-
-        <div class="settings-area">
-            <div class="setting-item">
-                <span class="setting-label">AI Model</span>
-                <select id="modelSelect">
-                    </select>
-            </div>
-            
-            <div class="setting-item">
-                <span class="setting-label">Connection Mode</span>
-                <select id="proxySelect">
-                    <option value="auto">Auto (Try Direct, then Proxy)</option>
-                    <option value="proxy">Force Proxy (CorsProxy.io)</option>
-                    <option value="direct">Direct (Requires Extension)</option>
+        <div class="control-group">
+            <label>Select Service</label>
+            <select id="modelSelect">
                 </select>
-            </div>
-            
-            <div style="font-size: 0.7rem; color: #666; margin-top:10px;">
-                Client-Side v2.0
+        </div>
+
+        <div class="control-group">
+            <label>Connection Mode</label>
+            <select id="proxySelect">
+                <option value="auto">Auto (Smart Proxy)</option>
+                <option value="direct">Direct (Requires Extension)</option>
+                <option value="proxy">Force Proxy (CorsProxy.io)</option>
+            </select>
+            <div class="badge" style="margin-top:10px; width:100%; box-sizing:border-box;">
+                <i class="fa-solid fa-info-circle"></i> "Auto" attempts to bypass CORS automatically.
             </div>
         </div>
     </div>
@@ -297,74 +209,33 @@
             <div class="message">
                 <div class="avatar ai"><i class="fa-solid fa-robot"></i></div>
                 <div class="content">
-                    <p>Hello! I am your unified AI interface.</p>
-                    <p>I am running <b>100% in your browser</b>. No Python backend required.</p>
-                    <div class="badge warning">
-                        <i class="fa-solid fa-triangle-exclamation"></i> 
-                        If a model fails, ensure you have a CORS extension enabled.
-                    </div>
+                    <p>System Online. Loaded 11 models from your scripts.</p>
                 </div>
             </div>
         </div>
 
         <div class="input-area">
-            <div class="input-container">
+            <div class="input-box">
                 <input type="text" id="userInput" placeholder="Ask anything..." autocomplete="off">
-                <button class="send-btn" id="sendBtn" onclick="sendMessage()">
-                    <i class="fa-solid fa-paper-plane"></i>
-                </button>
+                <button class="send-btn" id="sendBtn" onclick="sendMessage()"><i class="fa-solid fa-arrow-up"></i></button>
             </div>
         </div>
     </div>
 
     <script>
-        // ==========================================
-        //  CONFIG & UTILS
-        // ==========================================
         const PROXY_URL = "https://corsproxy.io/?";
-
+        
+        // --- HELPER FUNCTIONS ---
         function uuid() { 
             return "10000000-1000-4000-8000-100000000000".replace(/[018]/g, c => 
                 (+c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> +c / 4).toString(16)
             ); 
         }
 
-        // ==========================================
-        //  MODEL DEFINITIONS
-        // ==========================================
+        // --- MODEL CONFIGURATIONS (From your Python scripts) ---
         const MODELS = {
-            talkai: {
-                name: "TalkAI (Best for Browser)",
-                url: "https://talkai.info/chat/send/",
-                headers: { "Content-Type": "application/json" },
-                prepare: (msg) => ({
-                    type: "chat",
-                    messagesHistory: [{ id: uuid(), from: "you", content: msg, model: "" }],
-                    settings: { model: "gpt-4.1-nano", temperature: 0.7 }
-                }),
-                parser: (line) => {
-                    if (line.startsWith("data:") && !line.includes("GPT") && line !== "data: -1") 
-                        return line.substring(5).trim() + " ";
-                    return "";
-                }
-            },
-            gptai: {
-                name: "GPTAI (Stable)",
-                url: "https://gptaichat.org/wp-admin/admin-ajax.php",
-                headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                prepare: (msg) => new URLSearchParams({
-                    "_wpnonce": "77b0336a1d", "post_id": "10", "action": "wpaicg_chat_shortcode_message",
-                    "message": msg, "bot_id": "0", "chat_id": "5635"
-                }),
-                parser: (line) => {
-                    if (line.startsWith("data:") && !line.includes("[DONE]")) {
-                        try { return JSON.parse(line.substring(5).trim()).choices?.[0]?.delta?.content || ""; } catch(e){}
-                    }
-                    return "";
-                }
-            },
             venice: {
-                name: "Venice AI (High Security)",
+                name: "Venice AI (GLM 4.6)",
                 url: "https://outerface.venice.ai/api/inference/chat",
                 headers: { "Content-Type": "application/json", "x-venice-version": "interface@python-client" },
                 prepare: (msg) => ({
@@ -372,12 +243,11 @@
                     prompt: [{ role: "user", content: msg }], temperature: 0.7, webEnabled: true
                 }),
                 parser: (line) => {
-                    try { const o = JSON.parse(line); return o.kind === "content" ? o.content : ""; } catch(e){}
-                    return "";
+                    try { const o = JSON.parse(line); return o.kind === "content" ? o.content : ""; } catch(e){} return "";
                 }
             },
             useai: {
-                name: "Use.ai (High Security)",
+                name: "Use.ai (GPT-5 Gateway)",
                 url: "https://use.ai/v1/chat",
                 headers: { "Content-Type": "application/json" },
                 prepare: (msg) => ({
@@ -387,7 +257,45 @@
                 parser: (line) => {
                     if (line.includes('"type":"text-delta"')) {
                         try { return JSON.parse(line.replace(/^data: /, '')).delta || ""; } catch(e){}
-                    }
+                    } return "";
+                }
+            },
+            chatplus: {
+                name: "ChatPlus (GPT-4o)",
+                url: "https://chatplus.com/api/chat",
+                headers: { "Content-Type": "application/json" },
+                prepare: (msg) => ({
+                    id: "guest", messages: [{ id: uuid(), createdAt: new Date().toISOString(), role: "user", content: msg, parts: [{ type: "text", text: msg }] }],
+                    selectedChatModelId: "gpt-4o-mini", token: null
+                }),
+                parser: (line) => {
+                    if (line.startsWith("0:")) {
+                        const t = line.split(":", 1)[1]?.trim();
+                        if (t && t.startsWith('"')) return t.slice(1, -1);
+                    } return "";
+                }
+            },
+            freedom: {
+                name: "FreedomGPT (Uncensored)",
+                url: "https://chat.freedomgpt.com/api/v1/chat/completions",
+                headers: { "Content-Type": "application/json", "Authorization": "Bearer null" },
+                prepare: (msg) => ({ model: { id: "auto" }, messages: [{ role: "user", content: msg }], temperature: 0 }),
+                parser: (line) => {
+                    if (line.startsWith("data:") && !line.includes("[DONE]")) {
+                        try { return JSON.parse(line.substring(6)).choices?.[0]?.delta?.content || ""; } catch(e){}
+                    } return "";
+                }
+            },
+            talkai: {
+                name: "TalkAI",
+                url: "https://talkai.info/chat/send/",
+                headers: { "Content-Type": "application/json" },
+                prepare: (msg) => ({
+                    type: "chat", messagesHistory: [{ id: uuid(), from: "you", content: msg, model: "" }],
+                    settings: { model: "gpt-4.1-nano", temperature: 0.7 }
+                }),
+                parser: (line) => {
+                    if (line.startsWith("data:") && !line.includes("GPT") && line !== "data: -1") return line.substring(5).trim() + " ";
                     return "";
                 }
             },
@@ -395,14 +303,22 @@
                 name: "NoteGPT",
                 url: "https://notegpt.io/api/v2/chat/stream",
                 headers: { "Content-Type": "application/json" },
+                prepare: (msg) => ({ conversation_id: uuid(), message: msg, language: "en", model: "gpt-4.1-mini", tone: "default" }),
+                parser: (line) => {
+                    if (line.startsWith("data:")) { try { return JSON.parse(line.substring(5)).text || ""; } catch(e){} } return "";
+                }
+            },
+            overchat: {
+                name: "OverChat",
+                url: "https://api.overchat.ai/v1/chat/completions",
+                headers: { "Content-Type": "application/json", "x-device-platform": "web", "x-device-uuid": uuid() },
                 prepare: (msg) => ({
-                    conversation_id: uuid(), message: msg, language: "en", model: "gpt-4.1-mini", tone: "default"
+                    chatId: uuid(), model: "gpt-5.2-nano", messages: [{ role: "user", content: msg }], stream: true
                 }),
                 parser: (line) => {
-                    if (line.startsWith("data:")) {
-                        try { return JSON.parse(line.substring(5).trim()).text || ""; } catch(e){}
-                    }
-                    return "";
+                    if (line.startsWith("data:") && !line.includes("[DONE]")) {
+                        try { return JSON.parse(line.substring(5)).choices?.[0]?.delta?.content || ""; } catch(e){}
+                    } return "";
                 }
             },
             chatpdf: {
@@ -414,105 +330,124 @@
                     msgMeta: { ai: {id: "OE5mBBw9Js"}, user: {id: "yf5geUuhWS"} }
                 }),
                 parser: (line) => {
-                    try { const o = JSON.parse(line); return o.type === "textPart" ? o.text : ""; } catch(e){}
-                    return "";
+                    try { const o = JSON.parse(line); return o.type === "textPart" ? o.text : ""; } catch(e){} return "";
                 }
             },
-            freedom: {
-                name: "FreedomGPT",
-                url: "https://chat.freedomgpt.com/api/v1/chat/completions",
-                headers: { "Content-Type": "application/json", "Authorization": "Bearer null" },
-                prepare: (msg) => ({ model: { id: "auto" }, messages: [{ role: "user", content: msg }], temperature: 0 }),
+            gptai: {
+                name: "GPTAI Chat",
+                url: "https://gptaichat.org/wp-admin/admin-ajax.php",
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                prepare: (msg) => new URLSearchParams({
+                    "_wpnonce": "77b0336a1d", "post_id": "10", "action": "wpaicg_chat_shortcode_message",
+                    "message": msg, "bot_id": "0", "chat_id": "5635"
+                }),
                 parser: (line) => {
                     if (line.startsWith("data:") && !line.includes("[DONE]")) {
-                        try { return JSON.parse(line.substring(6).trim()).choices?.[0]?.delta?.content || ""; } catch(e){}
-                    }
-                    return "";
+                        try { return JSON.parse(line.substring(5)).choices?.[0]?.delta?.content || ""; } catch(e){}
+                    } return "";
                 }
+            },
+            freeai: {
+                name: "Free AI Online",
+                url: "https://www.free-ai-online.com/wp-json/mwai-ui/v1/chats/submit",
+                headers: { "Content-Type": "application/json", "X-WP-Nonce": "f38511e776" },
+                prepare: (msg) => ({ botId: "AI FREE", contextId: 2, messages: [], newMessage: msg, stream: true }),
+                parser: (line) => {
+                    if (line.includes('"type":"live"')) { try { return JSON.parse(line.substring(6)).data || ""; } catch(e){} } return "";
+                }
+            },
+            deepai: {
+                name: "DeepAI (DeepSeek)",
+                url: "https://api.deepai.org/hacking_is_a_serious_crime",
+                headers: { "api-key": "tryit-48957598737-7bf6498cad4adf00c76eb3dfa97dc26d" }, // From file
+                prepare: (msg) => new URLSearchParams({
+                    "chat_style": "chat", "chatHistory": JSON.stringify([{role: "user", content: msg}]),
+                    "model": "DeepSeek V3.2"
+                }),
+                parser: (line) => line, // DeepAI is not streaming, returns full text in one go usually, but we handle as stream
+                isNonStreaming: true
             }
         };
 
-        // Init UI
+        // Populate Select
         const modelSelect = document.getElementById('modelSelect');
         Object.keys(MODELS).forEach(k => {
             const opt = document.createElement('option');
             opt.value = k; opt.text = MODELS[k].name; modelSelect.add(opt);
         });
 
-        // ==========================================
-        //  CORE LOGIC
-        // ==========================================
+        // --- CHAT LOGIC ---
         const userInput = document.getElementById('userInput');
         const sendBtn = document.getElementById('sendBtn');
         const chatContainer = document.getElementById('chatContainer');
 
         userInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
-        userInput.addEventListener('input', () => {
-            sendBtn.classList.toggle('active', userInput.value.trim().length > 0);
-        });
+        userInput.addEventListener('input', () => sendBtn.classList.toggle('active', userInput.value.trim().length > 0));
 
         async function sendMessage() {
             const text = userInput.value.trim();
             if (!text) return;
 
-            // UI Updates
             addMessage("User", "user", text);
-            userInput.value = '';
-            userInput.disabled = true;
-            
+            userInput.value = ''; userInput.disabled = true;
+
             const aiMsgId = addMessage("AI", "ai", '<i class="fa-solid fa-circle-notch fa-spin"></i> Thinking...');
             const modelKey = modelSelect.value;
             const model = MODELS[modelKey];
             const mode = document.getElementById('proxySelect').value;
 
-            let success = false;
-            let finalError = "";
-
-            // ATTEMPT 1: Direct Connection
-            if (mode === 'auto' || mode === 'direct') {
-                try {
-                    await streamRequest(model.url, model.headers, model.prepare(text), model.parser, aiMsgId);
-                    success = true;
-                } catch (e) {
-                    finalError = e.message;
-                    console.warn("Direct connection failed, trying proxy...");
+            try {
+                // Determine logic
+                let targetUrl = model.url;
+                let finalHeaders = { ...model.headers };
+                
+                // AUTO: Try direct first, if fail, retry with proxy
+                if (mode === 'auto' || mode === 'direct') {
+                    try {
+                        await runFetch(targetUrl, finalHeaders, model, text, aiMsgId);
+                        userInput.disabled = false; userInput.focus();
+                        return;
+                    } catch (e) {
+                        if (mode === 'direct') throw e; // Fail if forced direct
+                        // Otherwise, fall through to proxy
+                    }
                 }
-            }
 
-            // ATTEMPT 2: Proxy Connection (if direct failed or mode is proxy)
-            if (!success && (mode === 'auto' || mode === 'proxy')) {
-                try {
-                    // When using proxy, we must modify headers to avoid browser pre-flight blocks
-                    const proxyHeaders = { ...model.headers }; 
-                    // Note: corsproxy.io handles the origin, so we don't send Host/Origin explicitly usually
-                    
-                    await streamRequest(PROXY_URL + encodeURIComponent(model.url), proxyHeaders, model.prepare(text), model.parser, aiMsgId);
-                    success = true;
-                } catch (e) {
-                    finalError = e.message;
-                }
-            }
+                // PROXY MODE (or Auto Fallback)
+                targetUrl = PROXY_URL + encodeURIComponent(model.url);
+                // Important: Browser + Proxy doesn't like strict origin headers usually
+                delete finalHeaders["Origin"]; 
+                delete finalHeaders["Referer"];
 
-            if (!success) {
-                updateMessage(aiMsgId, `<div class="badge error">Connection Failed</div><br>Error: ${finalError}<br><br><small>Try installing a "Allow CORS" extension or switching models.</small>`);
-            }
+                await runFetch(targetUrl, finalHeaders, model, text, aiMsgId);
 
-            userInput.disabled = false;
-            userInput.focus();
+            } catch (e) {
+                updateMessage(aiMsgId, `<div class="badge error">Failed</div><br>${e.message}<br><small>Try switching connection mode or model.</small>`);
+            }
+            
+            userInput.disabled = false; userInput.focus();
         }
 
-        async function streamRequest(url, headers, body, parser, msgId) {
+        async function runFetch(url, headers, model, text, msgId) {
+            const body = model.prepare(text);
             const isFormData = body instanceof URLSearchParams;
-            
-            const response = await fetch(url, {
+
+            const res = await fetch(url, {
                 method: "POST",
                 headers: headers,
                 body: isFormData ? body : JSON.stringify(body)
             });
 
-            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
-            const reader = response.body.getReader();
+            // Handle non-streaming (DeepAI)
+            if (model.isNonStreaming) {
+                const text = await res.text();
+                updateMessage(msgId, text);
+                return;
+            }
+
+            const reader = res.body.getReader();
             const decoder = new TextDecoder();
             let buffer = "";
             let fullText = "";
@@ -526,26 +461,21 @@
                 buffer = lines.pop();
 
                 for (const line of lines) {
-                    const trimmed = line.trim();
-                    if (!trimmed) continue;
-                    const chunk = parser(trimmed);
+                    const chunk = model.parser(line.trim());
                     if (chunk) {
                         fullText += chunk;
                         updateMessage(msgId, fullText);
                     }
                 }
             }
-            if (!fullText) throw new Error("Empty response from API");
+            if (!fullText) throw new Error("Empty response");
         }
 
-        function addMessage(name, type, htmlContent) {
+        function addMessage(name, type, html) {
             const div = document.createElement('div');
             div.className = 'message';
             div.id = 'msg-' + Date.now();
-            div.innerHTML = `
-                <div class="avatar ${type}">${type === 'ai' ? '<i class="fa-solid fa-robot"></i>' : '<i class="fa-solid fa-user"></i>'}</div>
-                <div class="content">${htmlContent}</div>
-            `;
+            div.innerHTML = `<div class="avatar ${type}">${type==='ai'?'<i class="fa-solid fa-robot"></i>':'<i class="fa-solid fa-user"></i>'}</div><div class="content">${html}</div>`;
             chatContainer.appendChild(div);
             chatContainer.scrollTop = chatContainer.scrollHeight;
             return div.id;
@@ -555,12 +485,8 @@
             const div = document.getElementById(id);
             if (div) {
                 const content = div.querySelector('.content');
-                // Check if text looks like HTML (error badge) or Markdown
-                if (text.trim().startsWith('<div')) {
-                    content.innerHTML = text;
-                } else {
-                    content.innerHTML = marked.parse(text);
-                }
+                if (text.startsWith('<div')) content.innerHTML = text; // Error message
+                else content.innerHTML = marked.parse(text);
                 chatContainer.scrollTop = chatContainer.scrollHeight;
             }
         }
