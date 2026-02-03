@@ -3,315 +3,485 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VincentAI | Secure Node</title>
+    <title>VincentAI | Advanced</title>
+    
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+
     <style>
         :root {
-            --bg-dark: #09090b;
-            --panel-bg: #18181b;
-            --border: #27272a;
-            --primary: #6366f1; /* Indigo */
-            --primary-dim: #4338ca;
-            --text-main: #e4e4e7;
+            --bg: #0e0e0e;
+            --sidebar: #171717;
+            --surface: #1e1e1e;
+            --border: #333333;
+            --primary: #4f46e5;
+            --primary-glow: rgba(79, 70, 229, 0.4);
+            --text-main: #ededed;
             --text-dim: #a1a1aa;
-            --success: #10b981;
-            --error: #ef4444;
         }
 
+        * { box-sizing: border-box; }
+
         body {
-            background-color: var(--bg-dark);
+            background-color: var(--bg);
             color: var(--text-main);
-            font-family: 'Inter', sans-serif;
+            font-family: 'Outfit', sans-serif;
             margin: 0;
             display: flex;
-            flex-direction: column;
             height: 100vh;
             overflow: hidden;
         }
 
-        /* --- Header --- */
-        header {
-            background: var(--panel-bg);
-            border-bottom: 1px solid var(--border);
-            padding: 0.75rem 1.5rem;
+        /* --- SIDEBAR --- */
+        aside {
+            width: 260px;
+            background: var(--sidebar);
+            border-right: 1px solid var(--border);
             display: flex;
-            align-items: center;
-            justify-content: space-between;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            flex-direction: column;
+            padding: 1rem;
+            transition: transform 0.3s ease;
         }
 
         .brand {
-            font-family: 'JetBrains Mono', monospace;
-            font-weight: 700;
-            font-size: 1.1rem;
+            font-size: 1.25rem;
+            font-weight: 600;
             display: flex;
             align-items: center;
-            gap: 0.75rem;
+            gap: 10px;
+            margin-bottom: 2rem;
+            color: white;
             letter-spacing: -0.5px;
         }
-        
-        .status-dot {
-            width: 8px;
-            height: 8px;
-            background-color: var(--success);
-            border-radius: 50%;
-            box-shadow: 0 0 8px var(--success);
-            animation: pulse 2s infinite;
+
+        .new-chat-btn {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            padding: 0.75rem;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+            margin-bottom: 1rem;
         }
 
-        .controls {
+        .new-chat-btn:hover { background: var(--border); }
+
+        .history-list {
+            flex: 1;
+            overflow-y: auto;
             display: flex;
-            gap: 1rem;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .history-item {
+            padding: 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            color: var(--text-dim);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            transition: background 0.2s;
+        }
+
+        .history-item:hover { background: rgba(255,255,255,0.05); color: white; }
+
+        .settings-area {
+            border-top: 1px solid var(--border);
+            padding-top: 1rem;
+            margin-top: auto;
+        }
+
+        .settings-btn {
+            width: 100%;
+            background: transparent;
+            border: none;
+            color: var(--text-dim);
+            text-align: left;
+            padding: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            display: flex;
             align-items: center;
+            gap: 10px;
+        }
+
+        .settings-btn:hover { color: white; }
+
+        /* --- MAIN AREA --- */
+        main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        header {
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            /* border-bottom: 1px solid var(--border); */
+        }
+
+        .model-pill {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
         select {
-            background: var(--bg-dark);
+            background: transparent;
+            border: none;
             color: var(--text-main);
-            border: 1px solid var(--border);
-            padding: 0.5rem 1rem;
-            border-radius: 6px;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.85rem;
-            cursor: pointer;
             outline: none;
+            font-family: inherit;
+            cursor: pointer;
         }
 
-        select:focus { border-color: var(--primary); }
-
-        /* --- Main Chat --- */
-        main {
+        /* --- CHAT FEED --- */
+        #chat-container {
             flex: 1;
             overflow-y: auto;
-            padding: 2rem;
+            padding: 2rem 15%; /* Center column look */
             display: flex;
             flex-direction: column;
-            gap: 1.5rem;
+            gap: 2rem;
             scroll-behavior: smooth;
         }
 
-        .message-row {
+        .message {
             display: flex;
-            gap: 1rem;
-            max-width: 800px;
-            margin: 0 auto;
-            width: 100%;
-            animation: slideIn 0.3s ease-out;
+            gap: 1.5rem;
+            animation: fadeUp 0.3s ease;
+            max-width: 100%;
         }
 
         .avatar {
-            width: 36px;
-            height: 36px;
-            border-radius: 8px;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             flex-shrink: 0;
-            font-size: 0.9rem;
         }
 
-        .avatar.ai { background: var(--primary); color: white; }
-        .avatar.user { background: var(--border); color: var(--text-dim); }
+        .avatar.ai { background: linear-gradient(135deg, #6366f1, #a855f7); color: white; box-shadow: 0 0 15px var(--primary-glow); }
+        .avatar.user { background: var(--surface); color: var(--text-dim); border: 1px solid var(--border); }
 
-        .bubble {
-            background: var(--panel-bg);
-            border: 1px solid var(--border);
-            padding: 1rem;
-            border-radius: 12px;
-            border-top-left-radius: 2px;
-            line-height: 1.6;
-            font-size: 0.95rem;
+        .content {
             flex: 1;
+            line-height: 1.7;
+            font-size: 1rem;
+            color: #d4d4d8;
+            min-width: 0; /* Fix code block overflow */
         }
 
-        .message-row.user-row { flex-direction: row-reverse; }
-        .message-row.user-row .bubble { 
-            background: var(--primary-dim); 
-            border-color: var(--primary); 
-            border-radius: 12px;
-            border-top-right-radius: 2px;
+        /* Markdown Styles */
+        .content h1, .content h2, .content h3 { margin-top: 0.5em; color: white; }
+        .content p { margin-bottom: 0.8em; }
+        .content code { background: #2d2d30; padding: 2px 6px; border-radius: 4px; font-family: 'JetBrains Mono', monospace; font-size: 0.85em; color: #e06c75; }
+        .content pre { 
+            background: #1e1e1e !important; 
+            padding: 1rem; 
+            border-radius: 8px; 
+            overflow-x: auto; 
+            border: 1px solid var(--border);
+            position: relative;
+        }
+        .content pre code { 
+            background: transparent; 
+            color: inherit; 
+            padding: 0;
+            display: block;
         }
 
-        .metadata {
+        .copy-btn {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: rgba(255,255,255,0.1);
+            border: none;
+            color: #aaa;
+            padding: 4px 8px;
+            border-radius: 4px;
             font-size: 0.7rem;
-            color: var(--text-dim);
-            margin-bottom: 0.5rem;
-            font-family: 'JetBrains Mono', monospace;
+            cursor: pointer;
+        }
+        .copy-btn:hover { background: rgba(255,255,255,0.2); color: white; }
+
+        /* --- INPUT --- */
+        .input-area {
+            padding: 2rem 15%;
+            background: linear-gradient(to top, var(--bg) 80%, transparent);
+        }
+
+        .input-wrapper {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 10px 16px;
             display: flex;
-            justify-content: space-between;
-        }
-
-        /* --- Debugger Panel --- */
-        #debugger {
-            background: #000;
-            border-top: 1px solid var(--border);
-            height: 120px;
-            overflow-y: auto;
-            padding: 0.75rem;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.75rem;
-            color: var(--success);
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-        }
-        
-        .log-entry { display: flex; gap: 10px; }
-        .log-time { color: var(--text-dim); }
-        .log-warn { color: #fbbf24; }
-        .log-err { color: var(--error); }
-
-        /* --- Input Area --- */
-        footer {
-            background: var(--panel-bg);
-            padding: 1.5rem;
-            border-top: 1px solid var(--border);
-        }
-
-        form {
-            max-width: 800px;
-            margin: 0 auto;
+            align-items: flex-end; /* Align bottom for multiline */
+            gap: 10px;
+            transition: border 0.2s;
             position: relative;
         }
 
-        input {
-            width: 100%;
-            background: var(--bg-dark);
-            border: 1px solid var(--border);
-            color: var(--text-main);
-            padding: 1rem 3.5rem 1rem 1.25rem;
-            border-radius: 12px;
+        .input-wrapper:focus-within { border-color: var(--primary); }
+
+        textarea {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: white;
+            font-family: inherit;
             font-size: 1rem;
+            resize: none;
+            padding: 10px 0;
+            max-height: 150px;
             outline: none;
-            box-sizing: border-box;
+        }
+
+        .action-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-dim);
+            padding: 10px;
+            cursor: pointer;
+            border-radius: 8px;
             transition: all 0.2s;
         }
 
-        input:focus { border-color: var(--primary); box-shadow: 0 0 15px rgba(99, 102, 241, 0.1); }
+        .action-btn:hover { background: rgba(255,255,255,0.1); color: white; }
+        .send-btn { background: white; color: black; border-radius: 8px; }
+        .send-btn:hover { background: #e0e0e0; color: black; }
+        .send-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-        button {
-            position: absolute;
-            right: 10px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: transparent;
-            border: none;
-            color: var(--primary);
-            cursor: pointer;
-            padding: 0.5rem;
-            transition: 0.2s;
+        /* --- MODAL --- */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
         }
-        
-        button:hover { color: #fff; }
-        button:disabled { color: var(--text-dim); cursor: not-allowed; }
+        .modal-content {
+            background: var(--surface);
+            padding: 2rem;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            width: 300px;
+            text-align: center;
+        }
+        .modal input {
+            width: 100%;
+            padding: 10px;
+            margin: 15px 0;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            color: white;
+            border-radius: 6px;
+        }
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            width: 100%;
+        }
 
-        @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
-        @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        
-        /* Scrollbar */
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: var(--bg-dark); }
-        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: var(--text-dim); }
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            aside { display: none; }
+            #chat-container, .input-area { padding: 1rem; }
+        }
     </style>
 </head>
 <body>
 
-    <header>
+    <aside>
         <div class="brand">
-            <div class="status-dot"></div>
-            <i class="fa-solid fa-cube"></i>
-            VincentAI <span style="font-size:0.7em; opacity:0.5; font-weight:400;">SECURE PROXY</span>
+            <i class="fa-solid fa-gem text-indigo-500"></i> VincentAI
         </div>
-        
-        <div class="controls">
-            <i class="fa-solid fa-microchip" style="font-size: 0.8rem; color: var(--text-dim);"></i>
-            <select id="model-select">
-                <option value="DeepSeek V3.2">DeepSeek V3.2</option>
-                <option value="Llama 3.3 70B Instruct">Llama 3.3 70B Instruct</option>
-                <option value="Qwen3 30B">Qwen3 30B</option>
-                <option value="GPT-4o mini">GPT-4o mini</option>
-                <option value="Gemma 3 12B">Gemma 3 12B</option>
-                <option value="Gemma2 9B">Gemma2 9B</option>
-                <option value="GPT-4.1 Nano">GPT-4.1 Nano</option>
-            </select>
+        <button class="new-chat-btn" onclick="clearChat()">
+            <i class="fa-solid fa-plus"></i> New Chat
+        </button>
+        <div class="history-list" id="history-list">
+            </div>
+        <div class="settings-area">
+            <button class="settings-btn" onclick="openAuthModal()">
+                <i class="fa-solid fa-lock"></i> API Security
+            </button>
         </div>
-    </header>
+    </aside>
 
-    <main id="chat-container">
-        <div class="message-row">
-            <div class="avatar ai"><i class="fa-solid fa-robot"></i></div>
-            <div class="bubble">
-                <div class="metadata">
-                    <span>SYSTEM</span>
-                    <span>NOW</span>
+    <main>
+        <header>
+            <div class="model-pill">
+                <i class="fa-solid fa-microchip text-indigo-400"></i>
+                <select id="model-select">
+                    <option value="DeepSeek V3.2">DeepSeek V3.2 (Fast)</option>
+                    <option value="Llama 3.3 70B Instruct">Llama 3.3 (Smart)</option>
+                    <option value="Qwen3 30B">Qwen3 30B</option>
+                    <option value="GPT-4o mini">GPT-4o mini</option>
+                    <option value="Gemma 3 12B">Gemma 3 12B</option>
+                </select>
+            </div>
+        </header>
+
+        <div id="chat-container">
+            <div class="message">
+                <div class="avatar ai"><i class="fa-solid fa-bolt"></i></div>
+                <div class="content">
+                    <p>Hello. I am <strong>VincentAI</strong>, running on a secure proxy.</p>
+                    <p>I support Markdown, Code Highlighting, and Image Generation tools. Try asking me to write Python code or generate an image.</p>
                 </div>
-                VincentAI online. Backend encrypted. Debugger active below.
+            </div>
+        </div>
+
+        <div class="input-area">
+            <div class="input-wrapper">
+                <button class="action-btn" title="Generate Image" onclick="insertImagePrompt()">
+                    <i class="fa-regular fa-image"></i>
+                </button>
+                <textarea id="user-input" rows="1" placeholder="Ask anything..." oninput="autoResize(this)"></textarea>
+                <button id="send-btn" class="action-btn send-btn" onclick="handleSend()">
+                    <i class="fa-solid fa-arrow-up"></i>
+                </button>
+            </div>
+            <div style="text-align: center; font-size: 0.7rem; color: #555; margin-top: 10px;">
+                AI can make mistakes. Check important info.
             </div>
         </div>
     </main>
 
-    <div id="debugger">
-        <div class="log-entry"><span class="log-time">[INIT]</span> System ready. Waiting for input...</div>
+    <div id="auth-modal" class="modal">
+        <div class="modal-content">
+            <h3><i class="fa-solid fa-shield-halved"></i> Security Vault</h3>
+            <p style="font-size: 0.8rem; color: #aaa;">Enter your Render Backend Password</p>
+            <input type="password" id="api-password" placeholder="e.g. vincent-secret">
+            <button class="btn-primary" onclick="savePassword()">Unlock Access</button>
+        </div>
     </div>
-
-    <footer>
-        <form id="chat-form">
-            <input type="text" id="user-input" placeholder="Execute command..." autocomplete="off">
-            <button type="submit" id="send-btn"><i class="fa-solid fa-paper-plane"></i></button>
-        </form>
-    </footer>
 
     <script>
         // --- CONFIGURATION ---
-        // Connects to your Render Backend. 
-        // SECURITY NOTE: API Keys are hidden on the server, not here.
         const BACKEND_URL = "https://backendai-ablv.onrender.com"; 
 
-        // --- DOM ELEMENTS ---
+        // --- STATE ---
+        let password = localStorage.getItem('vincent_key') || '';
+        const history = JSON.parse(localStorage.getItem('vincent_history') || '[]');
+
+        // --- UI ELEMENTS ---
         const chatContainer = document.getElementById('chat-container');
-        const chatForm = document.getElementById('chat-form');
         const userInput = document.getElementById('user-input');
         const sendBtn = document.getElementById('send-btn');
         const modelSelect = document.getElementById('model-select');
-        const debugLog = document.getElementById('debugger');
+        const authModal = document.getElementById('auth-modal');
 
-        // --- DEBUGGER FUNCTION ---
-        function log(msg, type='info') {
-            const div = document.createElement('div');
-            div.className = "log-entry";
-            
-            const time = new Date().toLocaleTimeString('en-US', {hour12: false});
-            let colorClass = '';
-            if (type === 'error') colorClass = 'log-err';
-            if (type === 'warn') colorClass = 'log-warn';
+        // --- INITIALIZATION ---
+        // Configure Markdown (marked.js)
+        marked.setOptions({
+            highlight: function(code, lang) {
+                const language = highlight.getLanguage(lang) ? lang : 'plaintext';
+                return highlight.highlight(code, { language }).value;
+            },
+            langPrefix: 'hljs language-'
+        });
 
-            div.innerHTML = `<span class="log-time">[${time}]</span> <span class="${colorClass}">${msg}</span>`;
-            debugLog.appendChild(div);
-            debugLog.scrollTop = debugLog.scrollHeight; // Auto-scroll
+        if (!password) {
+            authModal.style.display = 'flex';
         }
 
-        // --- CHAT FUNCTIONS ---
-        function addMessage(role, text, isError = false) {
-            const div = document.createElement('div');
-            div.className = `message-row ${role}-row`;
+        renderHistory();
 
-            const icon = role === 'user' ? '<i class="fa-solid fa-user"></i>' : '<i class="fa-solid fa-robot"></i>';
-            const name = role === 'user' ? 'YOU' : 'VINCENT';
+        // --- CORE FUNCTIONS ---
+
+        async function handleSend() {
+            const text = userInput.value.trim();
+            if (!text) return;
+
+            // 1. Add User Message
+            addMessage('user', text);
+            userInput.value = '';
+            userInput.style.height = 'auto'; // Reset height
+            saveToHistory(text);
+
+            // 2. Create Placeholder for AI
+            const aiMsgDiv = addMessage('ai', '<span class="typing">Thinking...</span>');
+            const contentDiv = aiMsgDiv.querySelector('.content');
+
+            try {
+                // 3. Send Request
+                const response = await fetch(`${BACKEND_URL}/chat`, {
+                    method: 'POST',
+                    headers: {
+                        "Content-Type": "application/json",
+                        "x-vincent-password": password // SECURE HEADER
+                    },
+                    body: JSON.stringify({
+                        message: text,
+                        model: modelSelect.value
+                    })
+                });
+
+                if (response.status === 401) {
+                    contentDiv.innerHTML = `<span style="color: #ef4444;">🔒 Access Denied. Please check your password in Settings.</span>`;
+                    openAuthModal();
+                    return;
+                }
+
+                if (!response.ok) throw new Error("Backend Error");
+
+                const rawText = await response.text();
+
+                // 4. Stream/Typewriter Effect
+                typeWriterEffect(contentDiv, rawText);
+
+            } catch (err) {
+                contentDiv.innerHTML = `<span style="color: #ef4444;">⚠️ Connection Failed. Ensure your Render backend is awake.</span>`;
+            }
+        }
+
+        function addMessage(role, text) {
+            const div = document.createElement('div');
+            div.className = 'message';
             
-            let content = text;
-            if (isError) content = `<span style="color:var(--error);"><i class="fa-solid fa-triangle-exclamation"></i> ${text}</span>`;
+            const avatar = role === 'user' 
+                ? `<div class="avatar user"><i class="fa-solid fa-user"></i></div>`
+                : `<div class="avatar ai"><i class="fa-solid fa-bolt"></i></div>`;
+            
+            // Initial render (user text isn't markdown parsed to prevent XSS on input, AI is)
+            const initialContent = role === 'user' ? text : text; 
 
             div.innerHTML = `
-                <div class="avatar ${role}">${icon}</div>
-                <div class="bubble">
-                    <div class="metadata">
-                        <span>${name}</span>
-                        <span>${new Date().toLocaleTimeString()}</span>
-                    </div>
-                    ${content}
-                </div>
+                ${avatar}
+                <div class="content">${initialContent}</div>
             `;
             
             chatContainer.appendChild(div);
@@ -319,62 +489,107 @@
             return div;
         }
 
-        async function sendMessage(text) {
-            const model = modelSelect.value;
-            log(`Sending request... Model: ${model}`);
+        function typeWriterEffect(element, text) {
+            element.innerHTML = ''; // Clear "Thinking..."
+            let index = 0;
+            const speed = 5; // ms per char
 
-            try {
-                // Security: We send JSON. The backend handles the headers and keys.
-                const response = await fetch(`${BACKEND_URL}/chat`, {
-                    method: 'POST',
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ message: text, model: model })
-                });
-
-                if (!response.ok) {
-                    throw new Error(`HTTP Error ${response.status}`);
+            function type() {
+                if (index < text.length) {
+                    // Just append text for now, we parse Markdown at the end for performance
+                    // or chunk it. For simplicity in this demo, we append chars.
+                    element.textContent += text.charAt(index);
+                    index++;
+                    chatContainer.scrollTop = chatContainer.scrollHeight;
+                    setTimeout(type, speed);
+                } else {
+                    // 5. Finalize: Render Markdown & Highlight Code
+                    element.innerHTML = marked.parse(text);
+                    hljs.highlightAll();
+                    addCopyButtons(element);
                 }
+            }
+            type();
+        }
 
-                const data = await response.text();
-                log("Response received successfully.");
-                return data;
+        // --- UTILS ---
 
-            } catch (error) {
-                log(`Connection Failed: ${error.message}`, 'error');
-                throw error;
+        function addCopyButtons(element) {
+            element.querySelectorAll('pre').forEach(pre => {
+                const btn = document.createElement('button');
+                btn.className = 'copy-btn';
+                btn.innerText = 'Copy';
+                btn.onclick = () => {
+                    navigator.clipboard.writeText(pre.innerText);
+                    btn.innerText = 'Copied!';
+                    setTimeout(() => btn.innerText = 'Copy', 2000);
+                };
+                pre.appendChild(btn);
+            });
+        }
+
+        function autoResize(textarea) {
+            textarea.style.height = 'auto';
+            textarea.style.height = textarea.scrollHeight + 'px';
+        }
+
+        function insertImagePrompt() {
+            userInput.value = "Generate an image of ";
+            userInput.focus();
+        }
+
+        // --- AUTH & HISTORY ---
+
+        function openAuthModal() {
+            authModal.style.display = 'flex';
+        }
+
+        function savePassword() {
+            const input = document.getElementById('api-password');
+            if (input.value) {
+                password = input.value;
+                localStorage.setItem('vincent_key', password);
+                authModal.style.display = 'none';
             }
         }
 
-        // --- EVENT LISTENER ---
-        chatForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const text = userInput.value.trim();
-            if (!text) return;
+        function saveToHistory(text) {
+            if (history.length > 0 && history[0] === text) return; // Dedupe
+            history.unshift(text);
+            if (history.length > 20) history.pop();
+            localStorage.setItem('vincent_history', JSON.stringify(history));
+            renderHistory();
+        }
 
-            // UI State
-            userInput.value = '';
-            userInput.disabled = true;
-            sendBtn.disabled = true;
+        function renderHistory() {
+            const list = document.getElementById('history-list');
+            list.innerHTML = '';
+            history.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'history-item';
+                div.textContent = item;
+                div.onclick = () => { userInput.value = item; userInput.focus(); };
+                list.appendChild(div);
+            });
+        }
 
-            addMessage('user', text);
-            const loadingMsg = addMessage('ai', '<i class="fa-solid fa-spinner fa-spin"></i> Processing...');
+        function clearChat() {
+            chatContainer.innerHTML = `
+                <div class="message">
+                    <div class="avatar ai"><i class="fa-solid fa-bolt"></i></div>
+                    <div class="content">
+                        <p>Chat cleared. Ready for new instructions.</p>
+                    </div>
+                </div>`;
+        }
 
-            try {
-                const response = await sendMessage(text);
-                loadingMsg.remove();
-                addMessage('ai', response);
-            } catch (err) {
-                loadingMsg.remove();
-                addMessage('ai', "Connection Error. Check Debugger below.", true);
-            } finally {
-                userInput.disabled = false;
-                sendBtn.disabled = false;
-                userInput.focus();
+        // Enter key to send (Shift+Enter for newline)
+        userInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                handleSend();
             }
         });
-
-        // Initial Log
-        log(`Connected to Backend: ${BACKEND_URL}`);
     </script>
 </body>
 </html>
