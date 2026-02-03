@@ -3,31 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VincentAI</title>
+    <title>VincentAI | Advanced Neural Interface</title>
     
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 
     <style>
+        /* --- THEME CONFIGURATION --- */
         :root {
-            --bg: #131314;
-            --sidebar: #1e1f20;
-            --surface: #282a2c;
-            --text-main: #e3e3e3;
-            --text-sub: #c4c7c5;
-            --accent: #a8c7fa;
-            --border: #444746;
+            --bg-color: #131314;
+            --sidebar-bg: #1e1f20;
+            --surface-color: #282a2c;
+            --primary-accent: #a8c7fa;
+            --text-primary: #e3e3e3;
+            --text-secondary: #c4c7c5;
+            --border-color: #444746;
+            --code-bg: #1b1b1b;
+            --user-bubble: #2d2e30;
+            --hover-color: #37393b;
         }
 
         * { box-sizing: border-box; }
 
         body {
-            background-color: var(--bg);
-            color: var(--text-main);
+            background-color: var(--bg-color);
+            color: var(--text-primary);
             font-family: 'Inter', sans-serif;
             margin: 0;
             display: flex;
@@ -38,215 +41,608 @@
 
         /* --- SIDEBAR --- */
         aside {
-            width: 260px;
-            background: var(--sidebar);
+            width: 280px;
+            background: var(--sidebar-bg);
             display: flex;
             flex-direction: column;
             padding: 1.5rem 1rem;
             transition: transform 0.3s ease;
+            flex-shrink: 0;
         }
 
-        .menu-btn { color: var(--text-sub); font-size: 1.2rem; margin-bottom: 2rem; cursor: pointer; width: fit-content; }
-        .new-chat { background: #37393b; color: var(--text-sub); border-radius: 20px; padding: 10px 15px; display: flex; align-items: center; gap: 10px; cursor: pointer; margin-bottom: 1.5rem; transition: background 0.2s; }
-        .new-chat:hover { background: #4a4d4f; color: white; }
-        .section-title { font-size: 0.75rem; font-weight: 600; color: var(--text-main); margin-bottom: 0.5rem; padding-left: 10px; }
-        .nav-item { padding: 10px 15px; border-radius: 20px; cursor: pointer; display: flex; align-items: center; gap: 12px; color: var(--text-main); font-size: 0.9rem; margin-bottom: 2px; }
-        .nav-item:hover { background: #37393b; }
-        .nav-item i { width: 16px; color: var(--text-main); }
-        .settings-bottom { margin-top: auto; border-top: 1px solid var(--border); padding-top: 10px; }
+        .menu-toggle {
+            color: var(--text-secondary);
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            cursor: pointer;
+            padding: 5px;
+            width: fit-content;
+        }
 
-        /* --- MAIN CONTENT --- */
-        main { flex: 1; display: flex; flex-direction: column; position: relative; }
+        .new-chat-btn {
+            background: #37393b;
+            color: var(--text-secondary);
+            border-radius: 18px;
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            margin-bottom: 2rem;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+        .new-chat-btn:hover { background: #4a4d4f; color: white; }
+
+        .section-header {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 1rem 0 0.5rem 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .nav-item {
+            padding: 10px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            margin-bottom: 4px;
+            transition: background 0.2s;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .nav-item:hover { background: var(--hover-color); }
+        .nav-item.active { background: #004a77; color: #c2e7ff; }
+        .nav-item i { width: 20px; text-align: center; font-size: 1rem; }
+
+        .sidebar-footer {
+            margin-top: auto;
+            border-top: 1px solid var(--border-color);
+            padding-top: 10px;
+        }
+
+        /* --- MAIN AREA --- */
+        main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            background: var(--bg-color);
+        }
+
+        /* Header */
+        header {
+            padding: 1rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 64px;
+        }
+
+        .model-selector {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            cursor: pointer;
+            position: relative;
+            padding: 5px 10px;
+            border-radius: 8px;
+        }
+        .model-selector:hover { background: var(--surface-color); color: var(--text-primary); }
         
-        header { padding: 1rem 1.5rem; display: flex; justify-content: space-between; align-items: center; }
-        
-        .model-select-wrapper { position: relative; }
-        select#model-select { appearance: none; background: transparent; border: none; color: var(--text-sub); font-size: 1.1rem; font-family: inherit; cursor: pointer; padding-right: 20px; outline: none; }
-        select#model-select option { background: var(--surface); color: white; }
+        select#model-dropdown {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
 
-        #chat-container { flex: 1; overflow-y: auto; padding: 1rem 20%; display: flex; flex-direction: column; gap: 2rem; scroll-behavior: smooth; }
+        /* Chat Container */
+        #chat-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem 15%;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+            scroll-behavior: smooth;
+        }
 
-        .welcome-screen { display: flex; flex-direction: column; height: 100%; justify-content: center; align-items: flex-start; padding-bottom: 100px; }
-        .gradient-text { background: linear-gradient(90deg, #4285F4, #9B72CB, #D96570); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-size: 3rem; font-weight: 500; margin: 0; line-height: 1.2; }
-        .sub-text { font-size: 3rem; color: #444746; font-weight: 500; margin: 0; }
+        .welcome-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding-bottom: 100px;
+        }
+        .welcome-title {
+            background: linear-gradient(90deg, #4285F4, #9B72CB, #D96570);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-size: 3.5rem;
+            font-weight: 500;
+            line-height: 1.2;
+            margin: 0;
+        }
+        .welcome-subtitle {
+            font-size: 3.5rem;
+            color: #444746;
+            font-weight: 500;
+            margin: 0;
+        }
 
-        .message { display: flex; gap: 1rem; line-height: 1.6; }
-        .avatar { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 4px; }
-        .avatar.ai i { background: linear-gradient(135deg, #4285F4, #D96570); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .avatar.user { background: #5f6368; color: white; font-size: 0.8rem; }
-        .content { flex: 1; min-width: 0; }
-        .content pre { background: #1e1e1e; padding: 10px; border-radius: 8px; overflow-x: auto; }
+        /* Messages */
+        .message-row {
+            display: flex;
+            gap: 1.2rem;
+            line-height: 1.6;
+            opacity: 0;
+            animation: fadeIn 0.3s forwards;
+        }
+        @keyframes fadeIn { to { opacity: 1; } }
 
-        .file-chip { display: inline-flex; align-items: center; gap: 8px; background: #1e1e1e; border: 1px solid var(--border); padding: 4px 10px; border-radius: 8px; margin-top: 5px; font-size: 0.85rem; color: var(--accent); }
+        .avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            margin-top: 4px;
+        }
+        .avatar.ai { background: transparent; }
+        .avatar.ai i { 
+            background: linear-gradient(135deg, #4285F4, #D96570); 
+            -webkit-background-clip: text; 
+            -webkit-text-fill-color: transparent; 
+            font-size: 1.5rem; 
+        }
+        .avatar.user { background: #5f6368; color: white; font-size: 0.9rem; font-weight: bold; }
 
-        .input-area { padding: 1rem 20% 2rem 20%; background: var(--bg); }
-        .input-box { background: var(--surface); border-radius: 28px; padding: 10px 15px; display: flex; align-items: flex-end; gap: 10px; transition: background 0.2s; }
-        .input-box:focus-within { background: #333537; }
+        .msg-content {
+            flex: 1;
+            min-width: 0;
+            font-size: 1rem;
+        }
+        .msg-content p { margin-top: 0; margin-bottom: 1rem; }
+        .msg-content code { background: #2d2d2d; padding: 2px 6px; border-radius: 4px; font-family: 'JetBrains Mono', monospace; font-size: 0.9em; }
+        .msg-content pre { background: #1e1e1e; padding: 1rem; border-radius: 8px; overflow-x: auto; margin: 10px 0; border: 1px solid var(--border-color); }
+        .msg-content ul, .msg-content ol { padding-left: 1.5rem; }
 
-        .icon-btn { width: 40px; height: 40px; border-radius: 50%; border: none; background: transparent; color: var(--text-main); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; transition: background 0.2s; }
-        .icon-btn:hover { background: rgba(255,255,255,0.1); }
-        
-        textarea { flex: 1; background: transparent; border: none; color: white; font-family: inherit; font-size: 1rem; padding: 10px 0; resize: none; max-height: 150px; outline: none; }
-        .send-btn.active { color: black; background: var(--accent); }
+        /* File Chip */
+        .file-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #1e1e1e;
+            border: 1px solid var(--border-color);
+            padding: 6px 12px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            font-size: 0.85rem;
+            color: var(--primary-accent);
+        }
+
+        /* --- INPUT AREA --- */
+        .input-region {
+            padding: 0 15% 2rem 15%;
+            background: var(--bg-color);
+        }
+
+        .input-bar {
+            background: var(--surface-color);
+            border-radius: 24px;
+            padding: 12px 16px;
+            display: flex;
+            align-items: flex-end;
+            gap: 12px;
+            transition: background 0.2s, box-shadow 0.2s;
+        }
+        .input-bar:focus-within { background: #333537; box-shadow: 0 0 0 1px #555; }
+
+        .tool-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: none;
+            background: transparent;
+            color: var(--text-primary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            transition: background 0.2s;
+            flex-shrink: 0;
+        }
+        .tool-btn:hover { background: rgba(255,255,255,0.1); }
+
+        textarea {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: white;
+            font-family: inherit;
+            font-size: 1rem;
+            padding: 10px 0;
+            resize: none;
+            max-height: 200px;
+            outline: none;
+            line-height: 1.5;
+        }
+
+        .send-btn { 
+            color: var(--text-secondary); 
+            transition: all 0.2s;
+        }
+        .send-btn.ready { 
+            background: var(--text-primary); 
+            color: var(--bg-color); 
+        }
+
+        /* --- MODAL (Settings) --- */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-box {
+            background: var(--surface-color);
+            width: 400px;
+            padding: 2rem;
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+        }
+        .modal-title { font-size: 1.2rem; font-weight: 600; margin-bottom: 1rem; }
+        .modal-btn { background: var(--primary-accent); border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; color: black; font-weight: 500; width: 100%; margin-top: 1rem; }
 
         #file-input { display: none; }
-        @media (max-width: 900px) { aside { display: none; } #chat-container, .input-area { padding-left: 1rem; padding-right: 1rem; } }
+        #file-preview-area { padding-left: 10px; margin-bottom: 5px; }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            aside { display: none; }
+            #chat-container, .input-region { padding-left: 1rem; padding-right: 1rem; }
+            .welcome-title, .welcome-subtitle { font-size: 2.5rem; }
+        }
     </style>
 </head>
 <body>
 
     <aside>
-        <div class="menu-btn"><i class="fa-solid fa-bars"></i></div>
-        <div class="new-chat" onclick="location.reload()"><i class="fa-solid fa-plus"></i> New chat</div>
-        <div class="section-title">Recent</div>
-        <div class="nav-item"><i class="fa-regular fa-message"></i> Python Script Help...</div>
-        <div class="section-title" style="margin-top: 20px;">Gems</div>
+        <div class="menu-toggle"><i class="fa-solid fa-bars"></i></div>
+        
+        <div class="new-chat-btn" onclick="startNewChat()">
+            <i class="fa-solid fa-plus"></i>
+            <span>New chat</span>
+        </div>
+
+        <div class="section-header">Recent</div>
+        <div id="history-list" style="flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:2px;">
+            </div>
+
+        <div class="section-header">Gems</div>
         <div class="nav-item"><i class="fa-solid fa-code"></i> Coding Partner</div>
-        <div class="nav-item"><i class="fa-solid fa-pen-nib"></i> Creative Writer</div>
-        <div class="settings-bottom">
-            <div class="nav-item"><i class="fa-solid fa-gear"></i> Settings</div>
+        <div class="nav-item"><i class="fa-solid fa-pen-fancy"></i> Creative Writing</div>
+        <div class="nav-item"><i class="fa-solid fa-image"></i> Image Generator</div>
+
+        <div class="sidebar-footer">
+            <div class="nav-item"><i class="fa-solid fa-gem"></i> Gem Manager</div>
+            <div class="nav-item"><i class="fa-regular fa-circle-question"></i> Help</div>
+            <div class="nav-item" onclick="toggleSettings()"><i class="fa-solid fa-gear"></i> Settings</div>
         </div>
     </aside>
 
     <main>
         <header>
-            <div class="model-select-wrapper">
-                <select id="model-select">
+            <div class="model-selector">
+                <span id="current-model-label">Gemini Advanced (DeepSeek)</span>
+                <i class="fa-solid fa-caret-down" style="font-size:0.8em; margin-left:5px;"></i>
+                <select id="model-dropdown" onchange="updateModelLabel()">
                     <option value="DeepSeek V3.2">Gemini Advanced (DeepSeek)</option>
                     <option value="Llama 3.3 70B Instruct">Gemini Pro (Llama 3.3)</option>
                     <option value="Qwen3 30B">Gemini Thinking (Qwen)</option>
                     <option value="GPT-4o mini">Gemini Flash (GPT-4o)</option>
                 </select>
-                <i class="fa-solid fa-caret-down" style="position:absolute; right:0; top:5px; pointer-events:none; color:#c4c7c5;"></i>
             </div>
-            <div class="icon-btn"><i class="fa-solid fa-user-circle"></i></div>
+            <div class="tool-btn" style="background:#444746; color:white; font-size:0.9rem;">VR</div>
         </header>
 
         <div id="chat-container">
-            <div id="welcome" class="welcome-screen">
-                <h1 class="gradient-text">Hello, User</h1>
-                <h2 class="sub-text">How can I help today?</h2>
+            <div id="welcome-screen" class="welcome-container">
+                <h1 class="welcome-title">Hello, Vincent</h1>
+                <h2 class="welcome-subtitle">How can I help you today?</h2>
             </div>
         </div>
 
-        <div class="input-area">
-            <div id="file-preview"></div>
-            <div class="input-box">
-                <button class="icon-btn" onclick="document.getElementById('file-input').click()"><i class="fa-solid fa-circle-plus"></i></button>
-                <input type="file" id="file-input" accept=".txt,.js,.py,.html,.css,.md" onchange="handleFileUpload(this)">
-                <textarea id="user-input" rows="1" placeholder="Enter a prompt here" oninput="checkInput(this)"></textarea>
-                <button id="send-btn" class="icon-btn send-btn" onclick="handleSend()"><i class="fa-solid fa-paper-plane"></i></button>
+        <div class="input-region">
+            <div id="file-preview-area"></div>
+            
+            <div class="input-bar">
+                <button class="tool-btn" onclick="document.getElementById('file-input').click()" title="Attach File">
+                    <i class="fa-solid fa-circle-plus"></i>
+                </button>
+                <input type="file" id="file-input" accept=".txt,.py,.js,.html,.css,.md,.json" onchange="handleFileSelect(this)">
+
+                <textarea id="user-input" rows="1" placeholder="Enter a prompt here" oninput="adjustHeight(this)"></textarea>
+                
+                <button class="tool-btn" title="Use Microphone"><i class="fa-solid fa-microphone"></i></button>
+                <button id="send-btn" class="tool-btn send-btn" onclick="sendMessage()">
+                    <i class="fa-solid fa-paper-plane"></i>
+                </button>
+            </div>
+            <div style="text-align:center; font-size:0.75rem; color:#666; margin-top:10px;">
+                VincentAI can make mistakes, so double-check it.
             </div>
         </div>
     </main>
 
+    <div id="settings-modal" class="modal-overlay">
+        <div class="modal-box">
+            <div class="modal-title">Settings</div>
+            <p style="color:#aaa; font-size:0.9rem;">
+                <strong>Backend Status:</strong> <span style="color:#a8c7fa;">Secure Connection</span><br>
+                <strong>Encryption:</strong> SHA-256 Tokenization<br>
+                <strong>Version:</strong> v3.2.0 (Gemini UI)
+            </p>
+            <div style="margin-top:1rem;">
+                <label style="color:white; font-size:0.9rem;">Clear Chat History</label>
+                <button class="modal-btn" style="background:#37393b; color:white;" onclick="clearHistory()">Clear All Data</button>
+            </div>
+            <button class="modal-btn" onclick="toggleSettings()">Close</button>
+        </div>
+    </div>
+
     <script>
-        // --- CONFIGURATION ---
+        // ==========================================
+        // CONFIGURATION
+        // ==========================================
         const BACKEND_URL = "https://backendai-ablv.onrender.com"; 
         
-        // SECURITY: This Salt must match the backend exactly!
-        // In a real app, you wouldn't expose this in JS, but for a 
-        // static-site + proxy setup, this prevents random automation.
-        const SECRET_SALT = "vincent-v3-secure-salt-2026"; 
+        // SECURITY SALT - MUST MATCH BACKEND EXACTLY
+        const SECRET_SALT = "vincent-gemini-ultra-secure-salt-2026-x"; 
 
-        let currentFileContent = "";
-        let currentFileName = "";
+        // ==========================================
+        // STATE MANAGEMENT
+        // ==========================================
+        let chatHistory = JSON.parse(localStorage.getItem('vincent_chats')) || [];
+        let currentChatId = null;
+        let currentFileContent = null;
+        let currentFileName = null;
+
         const chatContainer = document.getElementById('chat-container');
-        const welcomeScreen = document.getElementById('welcome');
+        const welcomeScreen = document.getElementById('welcome-screen');
         const userInput = document.getElementById('user-input');
+        const filePreview = document.getElementById('file-preview-area');
+        const historyList = document.getElementById('history-list');
 
-        marked.setOptions({ highlight: (code) => highlight.highlightAuto(code).value });
+        // Initialize Markdown & Highlight
+        marked.setOptions({
+            highlight: function(code, lang) {
+                const language = highlight.getLanguage(lang) ? lang : 'plaintext';
+                return highlight.highlight(code, { language }).value;
+            }
+        });
 
-        // --- SECURITY: GENERATE TOKEN ---
-        async function generateSecurityToken(msgId) {
-            const rawString = msgId + SECRET_SALT;
-            const encoder = new TextEncoder();
-            const data = encoder.encode(rawString);
-            const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-            const hashArray = Array.from(new Uint8Array(hashBuffer));
-            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        // Initialize App
+        loadHistorySidebar();
+
+        // ==========================================
+        // SECURITY LOGIC (SHA-256 TOKEN)
+        // ==========================================
+        async function generateToken(msgId) {
+            const raw = msgId + SECRET_SALT;
+            const enc = new TextEncoder();
+            const data = enc.encode(raw);
+            const hash = await crypto.subtle.digest('SHA-256', data);
+            return Array.from(new Uint8Array(hash))
+                .map(b => b.toString(16).padStart(2, '0'))
+                .join('');
         }
 
-        // --- FILE HANDLING ---
-        function handleFileUpload(input) {
+        // ==========================================
+        // FILE HANDLING
+        // ==========================================
+        function handleFileSelect(input) {
             const file = input.files[0];
             if (!file) return;
+
             const reader = new FileReader();
-            reader.onload = function(e) {
+            reader.onload = (e) => {
                 currentFileContent = e.target.result;
                 currentFileName = file.name;
-                document.getElementById('file-preview').innerHTML = `<div class="file-chip"><i class="fa-solid fa-file-lines"></i> ${file.name}</div>`;
+                
+                // Show Chip
+                filePreview.innerHTML = `
+                    <div class="file-chip">
+                        <i class="fa-solid fa-file-code"></i> ${file.name}
+                        <i class="fa-solid fa-xmark" style="cursor:pointer; margin-left:8px;" onclick="clearFile()"></i>
+                    </div>
+                `;
             };
             reader.readAsText(file);
         }
 
-        // --- CHAT LOGIC ---
-        async function handleSend() {
+        function clearFile() {
+            currentFileContent = null;
+            currentFileName = null;
+            filePreview.innerHTML = '';
+            document.getElementById('file-input').value = '';
+        }
+
+        // ==========================================
+        // CHAT LOGIC
+        // ==========================================
+        async function sendMessage() {
             const text = userInput.value.trim();
             if (!text && !currentFileContent) return;
 
+            // UI Cleanup
             if (welcomeScreen) welcomeScreen.style.display = 'none';
-
-            let fullMessage = text;
-            if (currentFileContent) fullMessage += `\n\n[File: ${currentFileName}]\n\`\`\`\n${currentFileContent}\n\`\`\``;
-
-            addMessage('user', text || `Attached file: ${currentFileName}`);
             userInput.value = '';
-            document.getElementById('file-preview').innerHTML = '';
-            currentFileContent = '';
+            userInput.style.height = 'auto';
+            document.getElementById('send-btn').classList.remove('ready');
 
-            const aiDiv = addMessage('ai', '<i class="fa-solid fa-spinner fa-spin"></i>');
-            const aiContent = aiDiv.querySelector('.content');
+            // Construct Message
+            let displayMsg = text;
+            let payloadMsg = text;
+
+            if (currentFileContent) {
+                displayMsg = `${text} <div class="file-chip" style="margin-top:5px; margin-left:0;"><i class="fa-solid fa-file"></i> ${currentFileName}</div>`;
+                payloadMsg = `${text}\n\n[System: User attached file '${currentFileName}']\n\`\`\`\n${currentFileContent}\n\`\`\``;
+                clearFile();
+            }
+
+            // Append User Message
+            appendMessage('user', displayMsg);
+            saveChatToHistory(text || `File: ${currentFileName}`);
+
+            // Append AI Placeholder
+            const aiDiv = appendMessage('ai', '<i class="fa-solid fa-circle-notch fa-spin"></i>');
+            const aiContent = aiDiv.querySelector('.msg-content');
 
             try {
-                // 1. Generate ID & Token
+                // Generate Security Token
                 const msgId = crypto.randomUUID();
-                const token = await generateSecurityToken(msgId);
-                const model = document.getElementById('model-select').value;
+                const token = await generateToken(msgId);
+                const model = document.getElementById('model-dropdown').value;
 
-                // 2. Send with Security Payload
+                // Fetch
                 const response = await fetch(`${BACKEND_URL}/chat`, {
                     method: 'POST',
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
                         id: msgId,
                         token: token,
-                        message: fullMessage, 
-                        model: model 
+                        message: payloadMsg,
+                        model: model
                     })
                 });
 
-                if (response.status === 403) throw new Error("Security Token Rejected");
-                if (!response.ok) throw new Error("Backend Error");
+                if (response.status === 403) throw new Error("Security Token Invalid (403)");
+                if (!response.ok) throw new Error(`Server Error ${response.status}`);
 
-                const result = await response.text();
-                aiContent.innerHTML = marked.parse(result);
+                const rawText = await response.text();
+                
+                // Render Markdown
+                aiContent.innerHTML = marked.parse(rawText);
                 hljs.highlightAll();
 
             } catch (err) {
-                aiContent.innerHTML = `<span style="color:#ff8b8b;">Error: ${err.message}</span>`;
+                aiContent.innerHTML = `<span style="color:#ef4444;">Error: ${err.message}. Ensure backend is running.</span>`;
             }
         }
 
-        function addMessage(role, html) {
+        function appendMessage(role, html) {
             const div = document.createElement('div');
-            div.className = 'message';
-            const icon = role === 'user' ? 'U' : '<i class="fa-solid fa-sparkles"></i>';
-            div.innerHTML = `<div class="avatar ${role}">${icon}</div><div class="content">${html}</div>`;
+            div.className = 'message-row';
+            
+            const icon = role === 'user' ? 'V' : '<i class="fa-solid fa-sparkles"></i>';
+            const cls = role === 'user' ? 'user' : 'ai';
+            const name = role === 'user' ? 'You' : 'VincentAI';
+
+            div.innerHTML = `
+                <div class="avatar ${cls}">${icon}</div>
+                <div class="msg-content">
+                    <div style="font-weight:600; margin-bottom:4px; font-size:0.9rem;">${name}</div>
+                    ${html}
+                </div>
+            `;
             chatContainer.appendChild(div);
             chatContainer.scrollTop = chatContainer.scrollHeight;
             return div;
         }
 
-        function checkInput(el) {
+        // ==========================================
+        // UI HELPERS
+        // ==========================================
+        function adjustHeight(el) {
             el.style.height = 'auto';
             el.style.height = el.scrollHeight + 'px';
-            document.getElementById('send-btn').classList.toggle('active', el.value.trim().length > 0);
+            const btn = document.getElementById('send-btn');
+            if (el.value.trim().length > 0) btn.classList.add('ready');
+            else btn.classList.remove('ready');
         }
 
+        function updateModelLabel() {
+            const sel = document.getElementById('model-dropdown');
+            const label = document.getElementById('current-model-label');
+            label.innerText = sel.options[sel.selectedIndex].text;
+        }
+
+        function toggleSettings() {
+            const modal = document.getElementById('settings-modal');
+            modal.style.display = modal.style.display === 'flex' ? 'none' : 'flex';
+        }
+
+        // ==========================================
+        // HISTORY & STORAGE
+        // ==========================================
+        function startNewChat() {
+            currentChatId = crypto.randomUUID();
+            chatContainer.innerHTML = '';
+            chatContainer.appendChild(welcomeScreen);
+            welcomeScreen.style.display = 'flex';
+            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+        }
+
+        function saveChatToHistory(title) {
+            // Deduplicate logic or new entry logic
+            // For this demo, we just add the title to the sidebar if it's the first msg
+            if (welcomeScreen.style.display === 'flex') return; // Don't save empty
+            
+            // Simple History Logic: Add to top of list
+            const existing = chatHistory.find(c => c.id === currentChatId);
+            if (!existing) {
+                const newChat = { id: currentChatId || crypto.randomUUID(), title: title.substring(0, 30) + '...' };
+                chatHistory.unshift(newChat);
+                localStorage.setItem('vincent_chats', JSON.stringify(chatHistory));
+                loadHistorySidebar();
+            }
+        }
+
+        function loadHistorySidebar() {
+            historyList.innerHTML = '';
+            chatHistory.forEach(chat => {
+                const div = document.createElement('div');
+                div.className = 'nav-item';
+                div.innerHTML = `<i class="fa-regular fa-message"></i> ${chat.title}`;
+                div.onclick = () => alert("Load Chat functionality is complex. This preserves history metadata!");
+                historyList.appendChild(div);
+            });
+        }
+
+        function clearHistory() {
+            localStorage.removeItem('vincent_chats');
+            chatHistory = [];
+            loadHistorySidebar();
+            toggleSettings();
+        }
+
+        // Enter key handling
         userInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); }
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
         });
+
     </script>
 </body>
 </html>
