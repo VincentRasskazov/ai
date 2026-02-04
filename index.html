@@ -3,492 +3,150 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="VincentAI is a free advanced AI chat interface. Chat with DeepSeek, Llama 3, and GPT-4o with image generation and coding support.">
-    <meta name="keywords" content="VincentAI, Free AI, DeepSeek V3, Llama 3.3, GPT-4o, Chatbot, AI Dashboard, Open Source AI">
-    <meta name="author" content="Your Name">
-    <meta property="og:title" content="VincentAI | Advanced Neural Interface">
-    <meta property="og:description" content="Use top-tier AI models for free securely.">
-    <title>VincentAI | Professional</title>
-    
+    <title>VincentAI</title>
     <script src="https://accounts.google.com/gsi/client" async defer></script>
-
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-
     <style>
-        :root {
-            --bg: #0f1113;
-            --sidebar: #181a1c;
-            --surface: #252729;
-            --primary: #a8c7fa;
-            --text-main: #e3e3e3;
-            --text-sub: #9ca3af;
-            --border: #353739;
-            --danger: #ff8b8b;
-        }
-
-        * { box-sizing: border-box; }
-        body { background: var(--bg); color: var(--text-main); font-family: 'Inter', sans-serif; margin: 0; display: flex; height: 100vh; overflow: hidden; }
-
-        /* --- SIDEBAR --- */
-        aside { width: 280px; background: var(--sidebar); display: flex; flex-direction: column; border-right: 1px solid var(--border); transition: 0.3s; flex-shrink: 0; }
+        body { background: #0f1113; color: #e3e3e3; font-family: sans-serif; margin: 0; display: flex; flex-direction: column; height: 100vh; }
         
-        .sidebar-header { padding: 1.5rem; }
-        .new-chat-btn {
-            background: #2b2d30; color: var(--text-sub); border-radius: 20px; padding: 12px 16px;
-            display: flex; align-items: center; gap: 12px; cursor: pointer; transition: 0.2s;
-            border: 1px solid transparent; font-size: 0.9rem;
-        }
-        .new-chat-btn:hover { background: #353739; color: white; border-color: #555; }
-
-        .history-container { flex: 1; overflow-y: auto; padding: 0 10px; display: flex; flex-direction: column; gap: 4px; }
-        .history-label { font-size: 0.75rem; font-weight: 600; color: var(--text-sub); margin: 10px 10px 5px; text-transform: uppercase; }
-
-        .conv-item {
-            padding: 10px 14px; border-radius: 8px; cursor: pointer; display: flex; align-items: center;
-            justify-content: space-between; color: var(--text-main); font-size: 0.9rem; position: relative;
-        }
-        .conv-item:hover { background: var(--surface); }
-        .conv-item.active { background: #004a77; color: #c2e7ff; }
-        .conv-title { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 190px; }
+        /* HEADER */
+        header { padding: 15px; border-bottom: 1px solid #333; display: flex; justify-content: space-between; align-items: center; }
+        select { background: #252729; color: white; border: 1px solid #444; padding: 8px; border-radius: 6px; font-size: 0.9rem; }
         
-        .conv-menu-btn { opacity: 0; padding: 4px; border-radius: 4px; color: var(--text-sub); transition: 0.2s; }
-        .conv-item:hover .conv-menu-btn { opacity: 1; }
-        .conv-menu-btn:hover { background: rgba(255,255,255,0.2); color: white; }
-
-        .dropdown-menu {
-            position: absolute; right: 10px; top: 35px; background: #2d2e30; border: 1px solid var(--border);
-            border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.5); z-index: 100; display: none; min-width: 120px;
-        }
-        .dropdown-item { padding: 8px 12px; font-size: 0.85rem; cursor: pointer; display: flex; gap: 8px; align-items: center; }
-        .dropdown-item:hover { background: #3d3f42; }
-        .dropdown-item.delete { color: var(--danger); }
-
-        .profile-section { padding: 1rem; border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 10px; }
-        #google-btn-container { width: 100%; display: flex; justify-content: center; overflow: hidden; }
+        /* CHAT AREA */
+        #chat-view { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 20px; }
         
-        .user-info { display: none; align-items: center; gap: 10px; padding: 8px; cursor: pointer; border-radius: 8px; transition: 0.2s; }
-        .user-info:hover { background: var(--surface); }
-        .user-info img { width: 32px; height: 32px; border-radius: 50%; }
-
-        /* --- MAIN AREA --- */
-        main { flex: 1; display: flex; flex-direction: column; position: relative; background: var(--bg); }
-
-        header { padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; height: 70px; }
+        /* MESSAGE BUBBLES */
+        .msg { display: flex; gap: 15px; max-width: 800px; margin: 0 auto; width: 100%; }
+        .avatar { width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-weight: bold; }
         
-        .model-pill {
-            background: var(--surface); padding: 8px 16px; border-radius: 8px; display: flex; align-items: center; gap: 8px;
-            cursor: pointer; font-size: 0.9rem; color: var(--text-main); position: relative;
-        }
-        .model-pill select { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
-
-        #chat-view { flex: 1; overflow-y: auto; padding: 1rem 15%; display: flex; flex-direction: column; gap: 1.5rem; scroll-behavior: smooth; }
+        /* User Style */
+        .user .avatar { background: #3b82f6; color: white; }
+        .user .text { color: #fff; }
         
-        .message { display: flex; gap: 1.2rem; line-height: 1.6; animation: fade 0.3s forwards; max-width: 100%; }
-        @keyframes fade { from {opacity:0; transform:translateY(5px);} to {opacity:1; transform:translateY(0);} }
+        /* AI Style */
+        .ai .avatar { background: #8b5cf6; color: white; }
+        .ai .text { color: #e5e7eb; line-height: 1.5; margin-top: 6px;}
 
-        .msg-avatar { width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0; overflow: hidden; margin-top: 4px; display: flex; align-items: center; justify-content: center; }
-        .msg-avatar.ai { background: linear-gradient(135deg, #4285F4, #D96570); color: transparent; } 
-        .msg-avatar.ai img { width: 100%; height: 100%; object-fit: cover; }
-        .msg-avatar.user { background: #5f6368; }
-        .msg-avatar.user img { width: 100%; height: 100%; object-fit: cover; }
-
-        .msg-content { flex: 1; min-width: 0; }
-        .sender-name { font-size: 0.85rem; font-weight: 600; margin-bottom: 4px; color: var(--text-main); }
+        .name { font-size: 0.8rem; font-weight: bold; margin-bottom: 5px; color: #aaa; }
         
-        .msg-content p { margin-top: 0; }
-        .msg-content pre { background: #1b1b1b; padding: 1rem; border-radius: 8px; overflow-x: auto; border: 1px solid var(--border); }
-        .msg-content code { background: #2d2d2d; padding: 2px 6px; border-radius: 4px; font-family: 'JetBrains Mono'; font-size: 0.9em; }
+        /* INPUT AREA */
+        .input-area { padding: 20px; border-top: 1px solid #333; background: #0f1113; }
+        .input-box { max-width: 800px; margin: 0 auto; display: flex; gap: 10px; }
+        input { flex: 1; padding: 12px; border-radius: 8px; border: 1px solid #444; background: #252729; color: white; outline: none; }
+        button { padding: 12px 20px; background: #3b82f6; border: none; color: white; border-radius: 8px; cursor: pointer; }
+        button:hover { background: #2563eb; }
 
-        .input-region { padding: 1rem 15% 2rem; background: var(--bg); position: relative; }
-        .input-bar {
-            background: var(--surface); border-radius: 28px; padding: 10px 15px; display: flex; align-items: flex-end; gap: 10px;
-            transition: 0.2s; border: 1px solid transparent;
-        }
-        .input-bar:focus-within { background: #333537; border-color: #555; }
-
-        textarea { flex: 1; background: transparent; border: none; color: white; font-family: inherit; font-size: 1rem; padding: 10px 0; resize: none; max-height: 200px; outline: none; }
-
-        .icon-btn {
-            width: 40px; height: 40px; border-radius: 50%; border: none; background: transparent; color: var(--text-main);
-            cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0;
-        }
-        .icon-btn:hover { background: rgba(255,255,255,0.1); }
-        .send-btn.active { background: var(--text-main); color: var(--bg); }
-
-        #stop-btn {
-            position: absolute; top: -50px; left: 50%; transform: translateX(-50%);
-            background: var(--surface); border: 1px solid var(--border); color: var(--text-main);
-            padding: 8px 16px; border-radius: 8px; cursor: pointer; display: none; align-items: center; gap: 8px; font-size: 0.9rem;
-        }
-
-        .file-chip {
-            display: inline-flex; align-items: center; gap: 8px; background: #2d2f31; padding: 6px 12px;
-            border-radius: 8px; border: 1px solid var(--border); margin-bottom: 8px; font-size: 0.85rem; color: var(--primary);
-        }
-
-        @media (max-width: 900px) { aside { display: none; } #chat-view, .input-region { padding-left: 1rem; padding-right: 1rem; } }
+        /* GOOGLE BTN */
+        #google-btn { position: absolute; top: 15px; right: 15px; }
     </style>
 </head>
 <body>
 
-    <aside>
-        <div class="sidebar-header">
-            <div class="new-chat-btn" onclick="startNewChat()">
-                <i class="fa-solid fa-plus"></i> New Chat
+    <header>
+        <div style="font-weight:bold; font-size:1.2rem;">VincentAI</div>
+        <select id="model">
+            <option value="venice">Venice (DeepSeek)</option>
+            <option value="overchat">Overchat (GPT-5 Nano)</option>
+            <option value="talkai">TalkAI (GPT-4.1)</option>
+            <option value="notegpt">NoteGPT (GPT-4 Mini)</option>
+            <option value="useai">UseAI (Gateway 5)</option>
+            <option value="chatplus">ChatPlus (GPT-4o)</option>
+        </select>
+    </header>
+
+    <div id="google-btn"></div>
+
+    <div id="chat-view">
+        <div class="msg ai">
+            <div class="avatar">AI</div>
+            <div>
+                <div class="name">VincentAI</div>
+                <div class="text">Hello! Select a model and start chatting.</div>
             </div>
         </div>
-        
-        <div class="history-label">Your Conversations</div>
-        <div class="history-container" id="history-list">
-            </div>
+    </div>
 
-        <div class="profile-section">
-            <div id="google-btn-container"></div>
-            <div class="user-info" id="user-display" onclick="handleSignOut()">
-                <div class="msg-avatar user"><img id="user-avatar" src="" alt=""></div>
-                <div style="font-size:0.9rem;" id="user-name">User</div>
-                <i class="fa-solid fa-right-from-bracket" style="margin-left:auto; font-size:0.8rem; color:#888;"></i>
-            </div>
-        </div>
-    </aside>
-
-    <main>
-        <header>
-            <div class="model-pill">
-                <span id="model-label">DeepSeek V3.2 (Strongest)</span>
-                <i class="fa-solid fa-caret-down"></i>
-                <select id="model-select" onchange="updateModelLabel()">
-                    <option value="DeepSeek V3.2">DeepSeek V3.2 (Strongest)</option>
-                    <option value="Llama 3.3 70B Instruct">Llama 3.3 (Smart)</option>
-                    <option value="Qwen3 30B">Qwen3 30B (Thinking)</option>
-                    <option value="GPT-4o mini">GPT-4o mini (Fast)</option>
-                    <option value="GPT-4.1 Nano">GPT-4.1 Nano (Weakest)</option>
-                </select>
-            </div>
-        </header>
-
-        <div id="chat-view">
-            <div style="flex:1; display:flex; flex-direction:column; justify-content:center; align-items:center; opacity:0.5;">
-                <h1 style="font-size:2.5rem; margin-bottom:0;">VincentAI</h1>
-                <p>Advanced Neural Interface</p>
-            </div>
-        </div>
-
-        <div class="input-region">
-            <button id="stop-btn" onclick="stopGeneration()">
-                <i class="fa-solid fa-square" style="font-size: 0.8rem;"></i> Stop generating
-            </button>
-
-            <div id="file-preview"></div>
-
-            <div class="input-bar">
-                <button class="icon-btn" onclick="document.getElementById('file-input').click()"><i class="fa-solid fa-plus"></i></button>
-                <input type="file" id="file-input" style="display:none" onchange="handleFileUpload(this)">
-                
-                <textarea id="user-input" rows="1" placeholder="Message VincentAI..." oninput="autoResize(this)" autofocus></textarea>
-                <button id="send-btn" class="icon-btn send-btn" onclick="sendMessage()"><i class="fa-solid fa-paper-plane"></i></button>
-            </div>
-        </div>
-    </main>
+    <div class="input-area">
+        <form class="input-box" id="form">
+            <input type="text" id="input" placeholder="Type a message..." autocomplete="off">
+            <button type="submit">Send</button>
+        </form>
+    </div>
 
     <script>
-        // --- CONFIG ---
-        const BACKEND_URL = "https://backendai-ablv.onrender.com"; 
-        const SECRET_SALT = "vincent-gemini-ultra-secure-salt-2026-x"; 
-        // 🛑 PASTE YOUR GOOGLE CLIENT ID BELOW
-        const GOOGLE_CLIENT_ID = "358661951943-ju5lj6ls2do7m2dnil044oppa23f1ch0.apps.googleusercontent.com"; 
+        // CONFIG
+        const BACKEND_URL = "https://backendai-ablv.onrender.com"; // <--- CHANGE IF NEEDED
+        const GOOGLE_CLIENT_ID = "YOUR_GOOGLE_CLIENT_ID_HERE"; // <--- PASTE ID HERE
 
-        // --- STATE ---
-        let currentUser = null; 
-        let currentChatId = null;
-        let abortController = null;
-        let currentFile = null;
-        let lastMessageTime = 0;
-        const RATE_LIMIT_MS = 3000; 
-
-        // --- DOM ---
         const chatView = document.getElementById('chat-view');
-        const userInput = document.getElementById('user-input');
-        const sendBtn = document.getElementById('send-btn');
-        const stopBtn = document.getElementById('stop-btn');
-        const filePreview = document.getElementById('file-preview');
+        const form = document.getElementById('form');
+        const input = document.getElementById('input');
+        const modelSelect = document.getElementById('model');
 
-        // --- INIT ---
+        // GOOGLE AUTH INIT
         window.onload = function() {
-            renderSidebar();
-            marked.setOptions({ highlight: (code) => highlight.highlightAuto(code).value });
-            
-            // Google Auth Init
             if(GOOGLE_CLIENT_ID !== "YOUR_GOOGLE_CLIENT_ID_HERE") {
-                google.accounts.id.initialize({ client_id: GOOGLE_CLIENT_ID, callback: handleCredentialResponse });
-                google.accounts.id.renderButton(document.getElementById("google-btn-container"), { theme: "outline", size: "large" });
-            }
-
-            // Restore User
-            const savedUser = localStorage.getItem('vincent_google_user');
-            if (savedUser) { 
-                currentUser = JSON.parse(savedUser); 
-                showUserUI(); 
-                renderSidebar(); // Reload chats for this user
-            }
-        };
-
-        // --- AUTH & DATA MANAGEMENT ---
-        function getStorageKey() {
-            // If logged in, use unique key. If guest, use guest key.
-            return currentUser ? `vincent_chats_${currentUser.id || 'google'}` : 'vincent_chats_guest';
-        }
-
-        function loadConversations() {
-            return JSON.parse(localStorage.getItem(getStorageKey())) || [];
-        }
-
-        function saveConversations(convs) {
-            localStorage.setItem(getStorageKey(), JSON.stringify(convs));
-        }
-
-        function handleCredentialResponse(response) {
-            const data = parseJwt(response.credential);
-            currentUser = { id: data.sub, name: data.name, picture: data.picture };
-            localStorage.setItem('vincent_google_user', JSON.stringify(currentUser));
-            showUserUI();
-            currentChatId = null; // Reset view
-            renderSidebar();
-            renderChat();
-        }
-
-        function showUserUI() {
-            document.getElementById('google-btn-container').style.display = 'none';
-            document.getElementById('user-display').style.display = 'flex';
-            document.getElementById('user-name').innerText = currentUser.name;
-            document.getElementById('user-avatar').src = currentUser.picture;
-        }
-
-        function handleSignOut() {
-            if(confirm("Sign out?")) {
-                currentUser = null;
-                localStorage.removeItem('vincent_google_user');
-                document.getElementById('user-display').style.display = 'none';
-                document.getElementById('google-btn-container').style.display = 'flex';
-                currentChatId = null;
-                renderSidebar();
-                renderChat();
+                google.accounts.id.initialize({ client_id: GOOGLE_CLIENT_ID, callback: handleLogin });
+                google.accounts.id.renderButton(document.getElementById("google-btn"), { theme: "outline", size: "large" });
             }
         }
+        function handleLogin(res) { console.log("Logged in"); document.getElementById('google-btn').style.display = 'none'; }
 
-        // --- CHAT LOGIC ---
-        async function sendMessage() {
-            const text = userInput.value.trim();
-            if (!text && !currentFile) return;
+        // CHAT LOGIC
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const text = input.value.trim();
+            if(!text) return;
 
-            // Rate Limit
-            const now = Date.now();
-            if (now - lastMessageTime < RATE_LIMIT_MS) {
-                alert(`Please wait ${Math.ceil((RATE_LIMIT_MS - (now - lastMessageTime))/1000)}s.`);
-                return;
-            }
-            lastMessageTime = now;
+            // 1. Add User Message
+            addMessage('user', 'You', text);
+            input.value = '';
 
-            let conversations = loadConversations();
-
-            // Create Chat if needed
-            if (!currentChatId) {
-                currentChatId = crypto.randomUUID();
-                const newChat = { id: currentChatId, title: text.substring(0, 30) || "New Chat", messages: [] };
-                conversations.unshift(newChat);
-                saveConversations(conversations);
-                renderSidebar();
-            }
-
-            // --- 1. CONTEXT BUILDING (MEMORY) ---
-            const chatIndex = conversations.findIndex(c => c.id === currentChatId);
-            const history = conversations[chatIndex].messages.slice(-8); // Get last 8 messages
+            // 2. Add AI Placeholder
+            const aiTextDiv = addMessage('ai', 'VincentAI', 'Thinking...');
             
-            // Construct Context String
-            let contextBlock = "";
-            if (history.length > 0) {
-                contextBlock = "History:\n" + history.map(m => `${m.role.toUpperCase()}: ${m.content}`).join("\n") + "\n\n";
-            }
-            
-            let fullPrompt = contextBlock + "User: " + text;
-            if (currentFile) fullPrompt += `\n[File: ${currentFile.name}]\n\`\`\`\n${currentFile.content}\n\`\`\``;
-
-            // --- 2. UI UPDATE ---
-            const displayHtml = text.replace(/\n/g, '<br>') + (currentFile ? `<div class="file-chip"><i class="fa-solid fa-file"></i> ${currentFile.name}</div>` : '');
-            conversations[chatIndex].messages.push({ role: 'user', content: displayHtml }); // Save displayed version
-            saveConversations(conversations);
-            renderChat();
-            
-            userInput.value = ''; 
-            userInput.style.height = 'auto';
-            currentFile = null; 
-            filePreview.innerHTML = '';
-            
-            // --- 3. SEND ---
-            sendBtn.style.display = 'none';
-            stopBtn.style.display = 'flex';
-            
-            // Add placeholder
-            conversations[chatIndex].messages.push({ role: 'ai', content: '<span id="thinking">Thinking...</span>' });
-            renderChat();
-
             try {
-                abortController = new AbortController();
-                const msgId = crypto.randomUUID();
-                const token = await generateToken(msgId);
-                const model = document.getElementById('model-select').value;
-
                 const response = await fetch(`${BACKEND_URL}/chat`, {
                     method: 'POST',
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ id: msgId, token: token, message: fullPrompt, model: model }),
-                    signal: abortController.signal
+                    body: JSON.stringify({ 
+                        message: text, 
+                        model: modelSelect.value 
+                    })
                 });
 
-                if (!response.ok) throw new Error("Network Error");
-                const result = await response.text();
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                aiTextDiv.innerHTML = ''; // Clear "Thinking..."
 
-                // Update last msg
-                conversations = loadConversations(); // Reload in case of changes
-                const targetChat = conversations.find(c => c.id === currentChatId);
-                targetChat.messages[targetChat.messages.length - 1].content = result;
-                saveConversations(conversations);
-                renderChat();
-
-            } catch (err) {
-                conversations = loadConversations();
-                const targetChat = conversations.find(c => c.id === currentChatId);
-                targetChat.messages[targetChat.messages.length - 1].content = err.name === 'AbortError' ? "Stopped." : `Error: ${err.message}`;
-                saveConversations(conversations);
-                renderChat();
-            } finally {
-                stopBtn.style.display = 'none';
-                sendBtn.style.display = 'flex';
-                abortController = null;
-                // Auto focus back to input
-                userInput.focus();
-            }
-        }
-
-        function stopGeneration() { if(abortController) abortController.abort(); }
-
-        function renderChat() {
-            chatView.innerHTML = '';
-            if (!currentChatId) {
-                 chatView.innerHTML = `<div style="flex:1; display:flex; flex-direction:column; justify-content:center; align-items:center; opacity:0.5;"><h1 style="font-size:2.5rem; margin-bottom:0;">VincentAI</h1><p>Advanced Neural Interface</p></div>`;
-                 return;
-            }
-
-            const conversations = loadConversations();
-            const chat = conversations.find(c => c.id === currentChatId);
-            if (!chat) return;
-
-            chat.messages.forEach(msg => {
-                const div = document.createElement('div');
-                div.className = 'message';
-                
-                let avatarHtml;
-                if (msg.role === 'ai') {
-                    avatarHtml = `<div class="msg-avatar ai"><img src="https://api.dicebear.com/9.x/bottts-neutral/svg?seed=VincentAI" alt="AI"></div>`;
-                } else {
-                    if (currentUser) avatarHtml = `<div class="msg-avatar user"><img src="${currentUser.picture}" alt="U"></div>`;
-                    else avatarHtml = `<div class="msg-avatar user"><div style="width:100%;height:100%;background:#555;"></div></div>`;
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    const chunk = decoder.decode(value);
+                    aiTextDiv.innerHTML += marked.parse(chunk); // Render Markdown
+                    chatView.scrollTop = chatView.scrollHeight;
                 }
-
-                div.innerHTML = `
-                    ${avatarHtml}
-                    <div class="msg-content">
-                        <div class="sender-name">${msg.role === 'ai' ? 'VincentAI' : (currentUser ? currentUser.name : 'You')}</div>
-                        <div class="msg-text">${msg.role === 'ai' ? marked.parse(msg.content) : msg.content}</div>
-                    </div>
-                `;
-                chatView.appendChild(div);
-            });
-            hljs.highlightAll();
-            chatView.scrollTop = chatView.scrollHeight;
-        }
-
-        function renderSidebar() {
-            const list = document.getElementById('history-list');
-            list.innerHTML = '';
-            const conversations = loadConversations();
-            
-            conversations.forEach(chat => {
-                const isActive = chat.id === currentChatId ? 'active' : '';
-                const item = document.createElement('div');
-                item.className = `conv-item ${isActive}`;
-                item.onclick = () => { currentChatId = chat.id; renderSidebar(); renderChat(); };
-                
-                item.innerHTML = `
-                    <div class="conv-title">${chat.title}</div>
-                    <div class="conv-menu-btn" onclick="toggleMenu(event, '${chat.id}')"><i class="fa-solid fa-ellipsis"></i></div>
-                    <div class="dropdown-menu" id="menu-${chat.id}">
-                        <div class="dropdown-item" onclick="renameChat('${chat.id}')"><i class="fa-solid fa-pen"></i> Rename</div>
-                        <div class="dropdown-item delete" onclick="deleteChat('${chat.id}')"><i class="fa-solid fa-trash"></i> Delete</div>
-                    </div>
-                `;
-                list.appendChild(item);
-            });
-        }
-
-        // --- EVENTS & MENU ---
-        function toggleMenu(e, id) { e.stopPropagation(); document.querySelectorAll('.dropdown-menu').forEach(el => el.style.display = 'none'); document.getElementById(`menu-${id}`).style.display = 'block'; }
-        
-        function renameChat(id) {
-            const newName = prompt("New Name:");
-            if (newName) { 
-                let convs = loadConversations();
-                convs.find(c => c.id === id).title = newName; 
-                saveConversations(convs); 
-                renderSidebar(); 
-            }
-        }
-        
-        function deleteChat(id) {
-            if(confirm("Delete?")) {
-                let convs = loadConversations();
-                convs = convs.filter(c => c.id !== id);
-                saveConversations(convs);
-                if (currentChatId === id) { currentChatId = null; renderChat(); }
-                renderSidebar();
-            }
-        }
-        window.onclick = () => document.querySelectorAll('.dropdown-menu').forEach(el => el.style.display = 'none');
-
-        // --- UX HELPERS ---
-        // Handle Enter vs Shift+Enter
-        userInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                sendMessage();
+            } catch (err) {
+                aiTextDiv.innerHTML = "Error: " + err.message;
             }
         });
 
-        function handleFileUpload(input) {
-            const file = input.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                currentFile = { name: file.name, content: e.target.result };
-                filePreview.innerHTML = `<div class="file-chip"><i class="fa-solid fa-file-code"></i> ${file.name}</div>`;
-            };
-            reader.readAsText(file);
-        }
-
-        function updateModelLabel() { document.getElementById('model-label').innerText = document.getElementById('model-select').value; }
-        function autoResize(el) { el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px'; document.getElementById('send-btn').classList.toggle('active', el.value.trim().length>0); }
-        function parseJwt(token) { return JSON.parse(decodeURIComponent(window.atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join(''))); }
-        
-        async function generateToken(msgId) {
-            const raw = msgId + SECRET_SALT;
-            const enc = new TextEncoder();
-            const data = enc.encode(raw);
-            const hash = await crypto.subtle.digest('SHA-256', data);
-            return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('');
+        function addMessage(role, name, text) {
+            const div = document.createElement('div');
+            div.className = `msg ${role}`;
+            
+            div.innerHTML = `
+                <div class="avatar">${role === 'user' ? 'U' : 'AI'}</div>
+                <div>
+                    <div class="name">${name}</div>
+                    <div class="text">${text}</div>
+                </div>
+            `;
+            chatView.appendChild(div);
+            chatView.scrollTop = chatView.scrollHeight;
+            return div.querySelector('.text'); // Return text element for streaming updates
         }
     </script>
 </body>
