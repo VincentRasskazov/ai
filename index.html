@@ -3,10 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VincentAI | Ultimate</title>
+    <title>VincentAI | Professional</title>
     
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
@@ -16,61 +19,50 @@
             --bg: #0f1113;
             --sidebar: #181a1c;
             --surface: #252729;
+            --surface-hover: #2f3133;
             --primary: #a8c7fa;
             --text-main: #e3e3e3;
             --text-sub: #9ca3af;
             --border: #353739;
-            --user-bubble: #2d2e30;
-            --danger: #ff8b8b;
         }
 
         * { box-sizing: border-box; }
-        body { background: var(--bg); color: var(--text-main); font-family: 'Inter', sans-serif; margin: 0; display: flex; height: 100vh; overflow: hidden; }
+        body { background: var(--bg); color: var(--text-main); font-family: 'Inter', sans-serif; margin: 0; display: flex; height: 100vh; overflow: hidden; font-size: 15px; }
 
         /* --- SIDEBAR --- */
         aside { width: 280px; background: var(--sidebar); display: flex; flex-direction: column; border-right: 1px solid var(--border); transition: 0.3s; flex-shrink: 0; }
         
-        .sidebar-header { padding: 1.5rem; }
+        .sidebar-header { padding: 1.5rem 1rem; }
+        
         .new-chat-btn {
             background: #2b2d30; color: var(--text-sub); border-radius: 20px; padding: 12px 16px;
             display: flex; align-items: center; gap: 12px; cursor: pointer; transition: 0.2s;
-            border: 1px solid transparent; font-size: 0.9rem;
+            border: 1px solid transparent; font-size: 0.9rem; margin-bottom: 1rem;
         }
         .new-chat-btn:hover { background: #353739; color: white; border-color: #555; }
 
         .history-container { flex: 1; overflow-y: auto; padding: 0 10px; display: flex; flex-direction: column; gap: 4px; }
-        .history-label { font-size: 0.75rem; font-weight: 600; color: var(--text-sub); margin: 10px 10px 5px; text-transform: uppercase; }
+        .history-label { font-size: 0.75rem; font-weight: 600; color: var(--text-sub); margin: 15px 12px 8px; text-transform: uppercase; letter-spacing: 0.5px; }
 
-        /* Conversation Item */
         .conv-item {
-            padding: 10px 14px; border-radius: 8px; cursor: pointer; display: flex; align-items: center;
-            justify-content: space-between; color: var(--text-main); font-size: 0.9rem; position: relative;
-            transition: background 0.1s;
+            padding: 10px 14px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: space-between;
+            color: var(--text-main); font-size: 0.9rem; transition: 0.1s; position: relative;
         }
         .conv-item:hover { background: var(--surface); }
         .conv-item.active { background: #004a77; color: #c2e7ff; }
-        .conv-title { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 190px; }
+        .conv-title { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 180px; }
+
+        /* Profile Section (Bottom Sidebar) */
+        .profile-section {
+            padding: 1rem; border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 10px;
+        }
         
-        /* 3 Dots Menu */
-        .conv-menu-btn { opacity: 0; padding: 4px; border-radius: 4px; color: var(--text-sub); transition: 0.2s; }
-        .conv-item:hover .conv-menu-btn { opacity: 1; }
-        .conv-menu-btn:hover { background: rgba(255,255,255,0.2); color: white; }
+        /* Google Button Styling Container */
+        #google-btn-container { width: 100%; overflow: hidden; display: flex; justify-content: center; }
 
-        .dropdown-menu {
-            position: absolute; right: 10px; top: 35px; background: #2d2e30; border: 1px solid var(--border);
-            border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.5); z-index: 100; display: none; min-width: 120px;
-        }
-        .dropdown-item { padding: 8px 12px; font-size: 0.85rem; cursor: pointer; display: flex; gap: 8px; align-items: center; }
-        .dropdown-item:hover { background: #3d3f42; }
-        .dropdown-item.delete { color: var(--danger); }
-
-        /* Profile Section */
-        .user-profile {
-            padding: 1rem; border-top: 1px solid var(--border); display: flex; align-items: center; gap: 10px;
-            cursor: pointer; transition: background 0.2s;
-        }
-        .user-profile:hover { background: var(--surface); }
-        .avatar-circle { width: 32px; height: 32px; background: #5f6368; border-radius: 50%; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; }
+        .user-info { display: none; align-items: center; gap: 10px; padding: 5px; cursor: pointer; border-radius: 8px; }
+        .user-info:hover { background: var(--surface); }
+        .user-info img { width: 32px; height: 32px; border-radius: 50%; }
 
         /* --- MAIN AREA --- */
         main { flex: 1; display: flex; flex-direction: column; position: relative; background: var(--bg); }
@@ -79,35 +71,40 @@
         
         .model-pill {
             background: var(--surface); padding: 8px 16px; border-radius: 8px; display: flex; align-items: center; gap: 8px;
-            cursor: pointer; font-size: 0.9rem; color: var(--text-main); position: relative;
+            cursor: pointer; font-size: 0.9rem; color: var(--text-main); position: relative; border: 1px solid var(--border);
         }
-        .model-pill select {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer;
-        }
+        .model-pill select { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
 
-        /* Chat */
-        #chat-view { flex: 1; overflow-y: auto; padding: 1rem 15%; display: flex; flex-direction: column; gap: 1.5rem; scroll-behavior: smooth; }
+        /* Chat View */
+        #chat-view { flex: 1; overflow-y: auto; padding: 1rem 15%; display: flex; flex-direction: column; gap: 2rem; scroll-behavior: smooth; }
         
-        .message { display: flex; gap: 1.2rem; line-height: 1.6; animation: fade 0.3s forwards; max-width: 100%; }
+        .message { display: flex; gap: 1.2rem; line-height: 1.6; animation: fade 0.3s forwards; }
         @keyframes fade { from {opacity:0; transform:translateY(5px);} to {opacity:1; transform:translateY(0);} }
 
-        .msg-avatar { width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; margin-top: 4px; }
-        .msg-avatar.ai { background: linear-gradient(135deg, #4285F4, #D96570); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-size: 1.2rem; }
-        .msg-avatar.user { background: #5f6368; color: white; font-size: 0.9rem; }
+        /* Avatars */
+        .avatar { width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0; overflow: hidden; margin-top: 4px; border: 1px solid var(--border); }
+        .avatar.ai img { width: 100%; height: 100%; object-fit: cover; background: white; } 
+        .avatar.user img { width: 100%; height: 100%; object-fit: cover; }
+        .avatar.user-placeholder { width: 100%; height: 100%; background: #5f6368; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; }
 
-        .msg-content { flex: 1; min-width: 0; }
+        .msg-content { flex: 1; min-width: 0; color: #ececec; }
         .sender-name { font-size: 0.85rem; font-weight: 600; margin-bottom: 4px; color: var(--text-main); }
-        .msg-text p { margin-top: 0; }
-        .msg-text pre { background: #1b1b1b; padding: 1rem; border-radius: 8px; overflow-x: auto; border: 1px solid var(--border); }
-        .msg-text code { background: #2d2d2d; padding: 2px 6px; border-radius: 4px; font-family: 'JetBrains Mono'; font-size: 0.9em; }
+        
+        /* Markdown Styles */
+        .msg-content p { margin-top: 0; }
+        .msg-content pre { background: #161616; padding: 1rem; border-radius: 8px; border: 1px solid var(--border); overflow-x: auto; margin: 10px 0; }
+        .msg-content code { background: #2d2d2d; padding: 2px 6px; border-radius: 4px; font-family: 'JetBrains Mono'; font-size: 0.85em; color: #ff8b8b; }
+        .msg-content table { border-collapse: collapse; width: 100%; margin: 10px 0; }
+        .msg-content th, .msg-content td { border: 1px solid var(--border); padding: 8px; text-align: left; }
+        .msg-content th { background: var(--surface); }
 
-        /* Input */
+        /* Input Area */
         .input-region { padding: 1rem 15% 2rem; background: var(--bg); position: relative; }
         .input-bar {
             background: var(--surface); border-radius: 28px; padding: 10px 15px; display: flex; align-items: flex-end; gap: 10px;
             transition: 0.2s; border: 1px solid transparent;
         }
-        .input-bar:focus-within { background: #333537; border-color: #555; }
+        .input-bar:focus-within { background: #333333; border-color: #555; }
 
         textarea { flex: 1; background: transparent; border: none; color: white; font-family: inherit; font-size: 1rem; padding: 10px 0; resize: none; max-height: 200px; outline: none; }
 
@@ -116,22 +113,14 @@
             cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0;
         }
         .icon-btn:hover { background: rgba(255,255,255,0.1); }
-        .send-btn.active { background: var(--text-main); color: var(--bg); }
-
-        /* Stop Button */
-        #stop-btn {
-            position: absolute; top: -50px; left: 50%; transform: translateX(-50%);
-            background: var(--surface); border: 1px solid var(--border); color: var(--text-main);
-            padding: 8px 16px; border-radius: 8px; cursor: pointer; display: none; align-items: center; gap: 8px; font-size: 0.9rem;
+        
+        /* File Chip */
+        .file-chip {
+            display: inline-flex; align-items: center; gap: 8px; background: #2d2f31; padding: 6px 12px;
+            border-radius: 8px; border: 1px solid var(--border); margin-bottom: 8px; font-size: 0.85rem; color: var(--primary);
         }
-        #stop-btn:hover { background: #3d3f42; }
 
-        /* Modals */
-        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; justify-content: center; align-items: center; }
-        .modal { background: var(--surface); padding: 2rem; border-radius: 16px; border: 1px solid var(--border); width: 350px; text-align: center; }
-        .modal input { width: 100%; padding: 10px; margin: 15px 0; background: var(--bg); border: 1px solid var(--border); color: white; border-radius: 8px; }
-        .btn-primary { background: var(--primary); color: #000; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; width: 100%; font-weight: 600; }
-
+        /* Mobile */
         @media (max-width: 900px) { aside { display: none; } #chat-view, .input-region { padding-left: 1rem; padding-right: 1rem; } }
     </style>
 </head>
@@ -144,13 +133,18 @@
             </div>
         </div>
         
-        <div class="history-label">Your Conversations</div>
+        <div class="history-label">Recent Chats</div>
         <div class="history-container" id="history-list">
             </div>
 
-        <div class="user-profile" onclick="openProfileModal()">
-            <div class="avatar-circle" id="user-avatar-disp">G</div>
-            <div style="font-size: 0.9rem;" id="user-name-disp">Guest</div>
+        <div class="profile-section">
+            <div id="google-btn-container"></div>
+            
+            <div class="user-info" id="user-display" onclick="handleSignOut()">
+                <img id="user-avatar" src="" alt="">
+                <div style="font-size:0.9rem;" id="user-name">User</div>
+                <i class="fa-solid fa-right-from-bracket" style="margin-left:auto; font-size:0.8rem; color:#888;"></i>
+            </div>
         </div>
     </aside>
 
@@ -161,190 +155,208 @@
                 <i class="fa-solid fa-caret-down"></i>
                 <select id="model-select" onchange="updateModelLabel()">
                     <option value="DeepSeek V3.2">DeepSeek V3.2 (Strongest)</option>
-                    <option value="Llama 3.3 70B Instruct">Llama 3.3 70B (Very Strong)</option>
-                    <option value="Qwen3 30B">Qwen3 30B (Strong)</option>
-                    <option value="GPT-4o mini">GPT-4o mini (Balanced)</option>
-                    <option value="Gemma 3 12B">Gemma 3 12B (Fast)</option>
-                    <option value="Gemma2 9B">Gemma2 9B (Faster)</option>
-                    <option value="GPT-4.1 Nano">GPT-4.1 Nano (Weakest)</option>
+                    <option value="Llama 3.3 70B Instruct">Llama 3.3 (Smart)</option>
+                    <option value="Qwen3 30B">Qwen3 30B (Thinking)</option>
+                    <option value="GPT-4o mini">GPT-4o mini (Fast)</option>
                 </select>
             </div>
         </header>
 
         <div id="chat-view">
-            <div style="flex:1; display:flex; flex-direction:column; justify-content:center; align-items:center; opacity:0.5;">
-                <h1 style="font-size:2.5rem; margin-bottom:0;">VincentAI</h1>
-                <p>How can I help you today?</p>
+            <div style="flex:1; display:flex; flex-direction:column; justify-content:center; align-items:center; opacity:0.6;">
+                <h1 style="font-size:2.5rem; margin:0;">VincentAI</h1>
+                <p>Advanced Neural Interface</p>
             </div>
         </div>
 
         <div class="input-region">
-            <button id="stop-btn" onclick="stopGeneration()">
-                <i class="fa-solid fa-square" style="font-size: 0.8rem;"></i> Stop generating
-            </button>
-
+            <div id="file-preview"></div>
             <div class="input-bar">
-                <button class="icon-btn" title="Attach File (Not available in demo)" style="opacity:0.5;"><i class="fa-solid fa-plus"></i></button>
-                <textarea id="user-input" rows="1" placeholder="Message VincentAI..." oninput="autoResize(this)"></textarea>
-                <button id="send-btn" class="icon-btn send-btn" onclick="sendMessage()"><i class="fa-solid fa-paper-plane"></i></button>
+                <button class="icon-btn" onclick="document.getElementById('file-input').click()"><i class="fa-solid fa-plus"></i></button>
+                <input type="file" id="file-input" style="display:none" onchange="handleFileUpload(this)">
+                
+                <textarea id="user-input" rows="1" placeholder="Ask anything..." oninput="autoResize(this)"></textarea>
+                <button id="send-btn" class="icon-btn" onclick="sendMessage()"><i class="fa-solid fa-paper-plane"></i></button>
             </div>
         </div>
     </main>
-
-    <div id="account-modal" class="modal-overlay">
-        <div class="modal">
-            <h3>Update Profile</h3>
-            <input type="text" id="username-input" placeholder="Enter Username">
-            <button class="btn-primary" onclick="saveProfile()">Save</button>
-            <button style="background:transparent; color:#888; border:none; margin-top:10px; cursor:pointer;" onclick="closeModal()">Cancel</button>
-        </div>
-    </div>
 
     <script>
         // --- CONFIG ---
         const BACKEND_URL = "https://backendai-ablv.onrender.com"; 
         const SECRET_SALT = "vincent-gemini-ultra-secure-salt-2026-x"; 
+        
+        // !!! IMPORTANT !!!
+        // You MUST replace this with your own Google Client ID or the button won't appear.
+        // Get it from console.cloud.google.com
+        const GOOGLE_CLIENT_ID = "YOUR_GOOGLE_CLIENT_ID_HERE"; 
 
         // --- STATE ---
-        let user = JSON.parse(localStorage.getItem('vincent_user')) || { name: 'Guest', avatar: 'G' };
-        let conversations = JSON.parse(localStorage.getItem('vincent_conversations')) || [];
+        let currentUser = null; // { name, picture }
+        let conversations = JSON.parse(localStorage.getItem('vincent_chats')) || [];
         let currentChatId = null;
-        let abortController = null;
+        let currentFile = null; // { name, content }
 
         // --- DOM ---
         const chatView = document.getElementById('chat-view');
         const userInput = document.getElementById('user-input');
-        const sendBtn = document.getElementById('send-btn');
-        const stopBtn = document.getElementById('stop-btn');
-        const modelSelect = document.getElementById('model-select');
+        const filePreview = document.getElementById('file-preview');
 
         // --- INIT ---
-        updateProfileUI();
-        renderSidebar();
-        marked.setOptions({ highlight: (code) => highlight.highlightAuto(code).value });
+        window.onload = function() {
+            renderSidebar();
+            
+            // Init Google Auth
+            google.accounts.id.initialize({
+                client_id: GOOGLE_CLIENT_ID,
+                callback: handleCredentialResponse
+            });
+            
+            // Render Google Button
+            google.accounts.id.renderButton(
+                document.getElementById("google-btn-container"),
+                { theme: "outline", size: "large", width: "240" }
+            );
 
-        // --- CORE FUNCTIONS ---
+            // Restore session if exists
+            const savedUser = localStorage.getItem('vincent_google_user');
+            if (savedUser) {
+                currentUser = JSON.parse(savedUser);
+                showUserUI();
+            }
+        };
 
+        // --- AUTH LOGIC ---
+        function handleCredentialResponse(response) {
+            // Decode JWT to get user info
+            const data = parseJwt(response.credential);
+            currentUser = {
+                name: data.name,
+                picture: data.picture
+            };
+            
+            // Save & Update UI
+            localStorage.setItem('vincent_google_user', JSON.stringify(currentUser));
+            showUserUI();
+        }
+
+        function showUserUI() {
+            document.getElementById('google-btn-container').style.display = 'none';
+            document.getElementById('user-display').style.display = 'flex';
+            document.getElementById('user-name').innerText = currentUser.name;
+            document.getElementById('user-avatar').src = currentUser.picture;
+        }
+
+        function handleSignOut() {
+            if(confirm("Sign out?")) {
+                currentUser = null;
+                localStorage.removeItem('vincent_google_user');
+                document.getElementById('user-display').style.display = 'none';
+                document.getElementById('google-btn-container').style.display = 'flex';
+            }
+        }
+
+        // --- CHAT LOGIC ---
         async function sendMessage() {
             const text = userInput.value.trim();
-            if (!text) return;
+            if (!text && !currentFile) return;
 
-            // 1. Setup Chat State
+            // 1. Create/Get Chat
             if (!currentChatId) {
                 currentChatId = crypto.randomUUID();
-                const newChat = { 
-                    id: currentChatId, 
-                    title: text.substring(0, 25) + "...", 
-                    messages: [] 
-                };
+                const newChat = { id: currentChatId, title: text.substring(0, 30) || "New Chat", messages: [] };
                 conversations.unshift(newChat);
                 renderSidebar();
             }
 
-            // 2. Add User Message
-            const chatIndex = conversations.findIndex(c => c.id === currentChatId);
-            conversations[chatIndex].messages.push({ role: 'user', content: text });
-            saveData();
+            // 2. Prepare Payload
+            let fullPrompt = text;
+            let displayHtml = text;
             
+            if (currentFile) {
+                fullPrompt += `\n\n[Attached File: ${currentFile.name}]\n\`\`\`\n${currentFile.content}\n\`\`\``;
+                displayHtml += `<br><div class="file-chip"><i class="fa-solid fa-file"></i> ${currentFile.name}</div>`;
+            }
+
+            // 3. Add User Message
+            addMessageToChat(currentChatId, 'user', displayHtml);
+            renderChat();
+            
+            // Reset Input
             userInput.value = '';
             userInput.style.height = 'auto';
-            renderChat(); // Re-render to show user msg
+            currentFile = null;
+            filePreview.innerHTML = '';
 
-            // 3. UI State
-            sendBtn.style.display = 'none';
-            stopBtn.style.display = 'flex';
-            
             // 4. Add AI Placeholder
-            conversations[chatIndex].messages.push({ role: 'ai', content: '<span id="loading-dots">Thinking...</span>' });
+            addMessageToChat(currentChatId, 'ai', '<i class="fa-solid fa-spinner fa-spin"></i>');
             renderChat();
 
             try {
-                // 5. Crypto Token
+                // Generate Crypto Token
                 const msgId = crypto.randomUUID();
                 const token = await generateToken(msgId);
-                
-                // 6. Abort Controller
-                abortController = new AbortController();
+                const model = document.getElementById('model-select').value;
 
-                // 7. Fetch
+                // Fetch
                 const response = await fetch(`${BACKEND_URL}/chat`, {
                     method: 'POST',
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
                         id: msgId,
                         token: token,
-                        message: text,
-                        model: modelSelect.value
-                    }),
-                    signal: abortController.signal
+                        message: fullPrompt,
+                        model: model
+                    })
                 });
 
-                if (!response.ok) throw new Error("Network Error");
-
                 const result = await response.text();
-
-                // 8. Update AI Message
-                const msgs = conversations[chatIndex].messages;
-                msgs[msgs.length - 1].content = result; // Replace "Thinking..." with result
+                
+                // Update Last Message
+                const chat = conversations.find(c => c.id === currentChatId);
+                chat.messages[chat.messages.length - 1].content = result;
                 saveData();
                 renderChat();
 
             } catch (err) {
-                const msgs = conversations[chatIndex].messages;
-                if (err.name === 'AbortError') {
-                    msgs[msgs.length - 1].content = "_Generation stopped by user._";
-                } else {
-                    msgs[msgs.length - 1].content = `**Error:** ${err.message}`;
-                }
-                saveData();
+                const chat = conversations.find(c => c.id === currentChatId);
+                chat.messages[chat.messages.length - 1].content = `Error: ${err.message}`;
                 renderChat();
-            } finally {
-                stopBtn.style.display = 'none';
-                sendBtn.style.display = 'flex';
-                abortController = null;
             }
-        }
-
-        function stopGeneration() {
-            if (abortController) abortController.abort();
         }
 
         // --- RENDERING ---
-
         function renderChat() {
             chatView.innerHTML = '';
-            
-            // If new chat (no ID)
-            if (!currentChatId) {
-                chatView.innerHTML = `
-                <div style="flex:1; display:flex; flex-direction:column; justify-content:center; align-items:center; opacity:0.5;">
-                    <h1 style="font-size:2.5rem; margin-bottom:0;">VincentAI</h1>
-                    <p>How can I help you today?</p>
-                </div>`;
-                return;
-            }
+            if (!currentChatId) return;
 
             const chat = conversations.find(c => c.id === currentChatId);
-            if (!chat) return;
-
             chat.messages.forEach(msg => {
                 const div = document.createElement('div');
                 div.className = 'message';
                 
-                const isAi = msg.role === 'ai';
-                const name = isAi ? 'VincentAI' : user.name;
-                const avatarClass = isAi ? 'ai' : 'user';
-                const avatarContent = isAi ? '<i class="fa-solid fa-sparkles"></i>' : user.avatar;
-                
-                // Markdown parse only if it's AI (security + formatting)
-                // If user, just text to prevent XSS, or sanitize if using marked
-                const htmlContent = isAi ? marked.parse(msg.content) : msg.content.replace(/\n/g, '<br>');
+                // Determine Avatar
+                let avatarHtml = '';
+                if (msg.role === 'ai') {
+                    // AI Avatar (Vincent Profile Pic)
+                    avatarHtml = `<div class="avatar ai"><img src="https://api.dicebear.com/9.x/bottts-neutral/svg?seed=VincentAI" alt="AI"></div>`;
+                } else {
+                    // User Avatar
+                    if (currentUser) {
+                        avatarHtml = `<div class="avatar user"><img src="${currentUser.picture}" alt="User"></div>`;
+                    } else {
+                        avatarHtml = `<div class="avatar user"><div class="avatar user-placeholder">U</div></div>`;
+                    }
+                }
+
+                // Parse content
+                const contentHtml = msg.role === 'ai' ? marked.parse(msg.content) : msg.content;
 
                 div.innerHTML = `
-                    <div class="msg-avatar ${avatarClass}">${avatarContent}</div>
+                    ${avatarHtml}
                     <div class="msg-content">
-                        <div class="sender-name">${name}</div>
-                        <div class="msg-text">${htmlContent}</div>
+                        <div class="sender-name">${msg.role === 'ai' ? 'VincentAI' : (currentUser ? currentUser.name : 'You')}</div>
+                        ${contentHtml}
                     </div>
                 `;
                 chatView.appendChild(div);
@@ -357,120 +369,54 @@
         function renderSidebar() {
             const list = document.getElementById('history-list');
             list.innerHTML = '';
-
             conversations.forEach(chat => {
-                const isActive = chat.id === currentChatId ? 'active' : '';
                 const item = document.createElement('div');
-                item.className = `conv-item ${isActive}`;
-                item.onclick = (e) => loadChat(chat.id);
-                
-                item.innerHTML = `
-                    <div class="conv-title"><i class="fa-regular fa-message"></i> ${chat.title}</div>
-                    <div class="conv-menu-btn" onclick="toggleMenu(event, '${chat.id}')">
-                        <i class="fa-solid fa-ellipsis"></i>
-                    </div>
-                    <div class="dropdown-menu" id="menu-${chat.id}">
-                        <div class="dropdown-item" onclick="renameChat('${chat.id}')"><i class="fa-solid fa-pen"></i> Rename</div>
-                        <div class="dropdown-item delete" onclick="deleteChat('${chat.id}')"><i class="fa-solid fa-trash"></i> Delete</div>
-                    </div>
-                `;
+                item.className = `conv-item ${chat.id === currentChatId ? 'active' : ''}`;
+                item.innerHTML = `<div class="conv-title">${chat.title}</div>`;
+                item.onclick = () => { currentChatId = chat.id; renderSidebar(); renderChat(); };
                 list.appendChild(item);
             });
         }
 
-        // --- ACTIONS ---
-
-        function loadChat(id) {
-            currentChatId = id;
-            renderSidebar();
-            renderChat();
-        }
-
-        function startNewChat() {
-            currentChatId = null;
-            renderSidebar();
-            renderChat();
-        }
-
-        function toggleMenu(e, id) {
-            e.stopPropagation();
-            // Close others
-            document.querySelectorAll('.dropdown-menu').forEach(el => el.style.display = 'none');
-            const menu = document.getElementById(`menu-${id}`);
-            menu.style.display = 'block';
-        }
-
-        function renameChat(id) {
-            const newName = prompt("Enter new chat name:");
-            if (newName) {
-                const chat = conversations.find(c => c.id === id);
-                if (chat) {
-                    chat.title = newName;
-                    saveData();
-                    renderSidebar();
-                }
-            }
-        }
-
-        function deleteChat(id) {
-            if (confirm("Delete this conversation?")) {
-                conversations = conversations.filter(c => c.id !== id);
-                if (currentChatId === id) startNewChat();
-                saveData();
-                renderSidebar();
-            }
-        }
-
-        // Close menus on click away
-        window.onclick = () => {
-            document.querySelectorAll('.dropdown-menu').forEach(el => el.style.display = 'none');
-        };
-
-        // --- ACCOUNT ---
-
-        function updateProfileUI() {
-            document.getElementById('user-name-disp').innerText = user.name;
-            document.getElementById('user-avatar-disp').innerText = user.avatar;
-        }
-
-        function openProfileModal() { document.getElementById('account-modal').style.display = 'flex'; }
-        function closeModal() { document.getElementById('account-modal').style.display = 'none'; }
-        
-        function saveProfile() {
-            const name = document.getElementById('username-input').value;
-            if (name) {
-                user.name = name;
-                user.avatar = name.charAt(0).toUpperCase();
-                localStorage.setItem('vincent_user', JSON.stringify(user));
-                updateProfileUI();
-                renderChat(); // Update names in current chat
-                closeModal();
-            }
+        // --- FILE HANDLING ---
+        function handleFileUpload(input) {
+            const file = input.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                currentFile = { name: file.name, content: e.target.result };
+                filePreview.innerHTML = `<div class="file-chip"><i class="fa-solid fa-file-code"></i> ${file.name}</div>`;
+            };
+            reader.readAsText(file);
         }
 
         // --- UTILS ---
-        
-        function saveData() {
-            localStorage.setItem('vincent_conversations', JSON.stringify(conversations));
+        function addMessageToChat(id, role, content) {
+            const chat = conversations.find(c => c.id === id);
+            chat.messages.push({ role, content });
+            saveData();
         }
-
+        
+        function saveData() { localStorage.setItem('vincent_chats', JSON.stringify(conversations)); }
+        function startNewChat() { currentChatId = null; renderSidebar(); renderChat(); }
+        
         function updateModelLabel() {
             const sel = document.getElementById('model-select');
             document.getElementById('model-label').innerText = sel.value;
         }
 
-        function autoResize(el) {
-            el.style.height = 'auto';
-            el.style.height = el.scrollHeight + 'px';
-            const btn = document.getElementById('send-btn');
-            if(el.value.trim()) btn.classList.add('active');
-            else btn.classList.remove('active');
+        function parseJwt(token) {
+            var base64Url = token.split('.')[1];
+            var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+            var jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
+                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+            }).join(''));
+            return JSON.parse(jsonPayload);
         }
-
-        userInput.addEventListener('keydown', (e) => {
-            if(e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
-        });
-
+        
+        function autoResize(el) { el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px'; }
+        
         async function generateToken(msgId) {
             const raw = msgId + SECRET_SALT;
             const enc = new TextEncoder();
