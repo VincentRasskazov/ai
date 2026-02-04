@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VincentAI</title>
+    <title>VincentAI | Professional</title>
     
     <script src="https://accounts.google.com/gsi/client" async defer></script>
 
@@ -42,7 +42,6 @@
         .history-container { flex: 1; overflow-y: auto; padding: 0 10px; display: flex; flex-direction: column; gap: 4px; }
         .history-label { font-size: 0.75rem; font-weight: 600; color: var(--text-sub); margin: 10px 10px 5px; text-transform: uppercase; }
 
-        /* Conversation Item & Menu (Restored) */
         .conv-item {
             padding: 10px 14px; border-radius: 8px; cursor: pointer; display: flex; align-items: center;
             justify-content: space-between; color: var(--text-main); font-size: 0.9rem; position: relative;
@@ -63,7 +62,6 @@
         .dropdown-item:hover { background: #3d3f42; }
         .dropdown-item.delete { color: var(--danger); }
 
-        /* Profile Section (Google Auth) */
         .profile-section { padding: 1rem; border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 10px; }
         #google-btn-container { width: 100%; display: flex; justify-content: center; overflow: hidden; }
         
@@ -82,7 +80,6 @@
         }
         .model-pill select { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
 
-        /* Chat View */
         #chat-view { flex: 1; overflow-y: auto; padding: 1rem 15%; display: flex; flex-direction: column; gap: 1.5rem; scroll-behavior: smooth; }
         
         .message { display: flex; gap: 1.2rem; line-height: 1.6; animation: fade 0.3s forwards; max-width: 100%; }
@@ -97,12 +94,10 @@
         .msg-content { flex: 1; min-width: 0; }
         .sender-name { font-size: 0.85rem; font-weight: 600; margin-bottom: 4px; color: var(--text-main); }
         
-        /* Markdown */
         .msg-content p { margin-top: 0; }
         .msg-content pre { background: #1b1b1b; padding: 1rem; border-radius: 8px; overflow-x: auto; border: 1px solid var(--border); }
         .msg-content code { background: #2d2d2d; padding: 2px 6px; border-radius: 4px; font-family: 'JetBrains Mono'; font-size: 0.9em; }
 
-        /* Input Region */
         .input-region { padding: 1rem 15% 2rem; background: var(--bg); position: relative; }
         .input-bar {
             background: var(--surface); border-radius: 28px; padding: 10px 15px; display: flex; align-items: flex-end; gap: 10px;
@@ -119,14 +114,12 @@
         .icon-btn:hover { background: rgba(255,255,255,0.1); }
         .send-btn.active { background: var(--text-main); color: var(--bg); }
 
-        /* Stop Button (Restored) */
         #stop-btn {
             position: absolute; top: -50px; left: 50%; transform: translateX(-50%);
             background: var(--surface); border: 1px solid var(--border); color: var(--text-main);
             padding: 8px 16px; border-radius: 8px; cursor: pointer; display: none; align-items: center; gap: 8px; font-size: 0.9rem;
         }
 
-        /* File Chip */
         .file-chip {
             display: inline-flex; align-items: center; gap: 8px; background: #2d2f31; padding: 6px 12px;
             border-radius: 8px; border: 1px solid var(--border); margin-bottom: 8px; font-size: 0.85rem; color: var(--primary);
@@ -150,7 +143,6 @@
 
         <div class="profile-section">
             <div id="google-btn-container"></div>
-            
             <div class="user-info" id="user-display" onclick="handleSignOut()">
                 <div class="msg-avatar user"><img id="user-avatar" src="" alt=""></div>
                 <div style="font-size:0.9rem;" id="user-name">User</div>
@@ -192,7 +184,7 @@
                 <button class="icon-btn" onclick="document.getElementById('file-input').click()"><i class="fa-solid fa-plus"></i></button>
                 <input type="file" id="file-input" style="display:none" onchange="handleFileUpload(this)">
                 
-                <textarea id="user-input" rows="1" placeholder="Message VincentAI..." oninput="autoResize(this)"></textarea>
+                <textarea id="user-input" rows="1" placeholder="Message VincentAI..." oninput="autoResize(this)" autofocus></textarea>
                 <button id="send-btn" class="icon-btn send-btn" onclick="sendMessage()"><i class="fa-solid fa-paper-plane"></i></button>
             </div>
         </div>
@@ -202,18 +194,16 @@
         // --- CONFIG ---
         const BACKEND_URL = "https://backendai-ablv.onrender.com"; 
         const SECRET_SALT = "vincent-gemini-ultra-secure-salt-2026-x"; 
-        const GOOGLE_CLIENT_ID = "358661951943-ju5lj6ls2do7m2dnil044oppa23f1ch0.apps.googleusercontent.com"; // <--- PUT ID HERE
+        // 🛑 PASTE YOUR GOOGLE CLIENT ID BELOW
+        const GOOGLE_CLIENT_ID = "YOUR_GOOGLE_CLIENT_ID_HERE"; 
 
         // --- STATE ---
         let currentUser = null; 
-        let conversations = JSON.parse(localStorage.getItem('vincent_chats')) || [];
         let currentChatId = null;
         let abortController = null;
         let currentFile = null;
-        
-        // --- RATE LIMIT STATE ---
         let lastMessageTime = 0;
-        const RATE_LIMIT_MS = 3000; // 3 Seconds
+        const RATE_LIMIT_MS = 3000; 
 
         // --- DOM ---
         const chatView = document.getElementById('chat-view');
@@ -227,22 +217,43 @@
             renderSidebar();
             marked.setOptions({ highlight: (code) => highlight.highlightAuto(code).value });
             
-            // Google Auth
+            // Google Auth Init
             if(GOOGLE_CLIENT_ID !== "YOUR_GOOGLE_CLIENT_ID_HERE") {
                 google.accounts.id.initialize({ client_id: GOOGLE_CLIENT_ID, callback: handleCredentialResponse });
                 google.accounts.id.renderButton(document.getElementById("google-btn-container"), { theme: "outline", size: "large" });
             }
 
+            // Restore User
             const savedUser = localStorage.getItem('vincent_google_user');
-            if (savedUser) { currentUser = JSON.parse(savedUser); showUserUI(); }
+            if (savedUser) { 
+                currentUser = JSON.parse(savedUser); 
+                showUserUI(); 
+                renderSidebar(); // Reload chats for this user
+            }
         };
 
-        // --- AUTH ---
+        // --- AUTH & DATA MANAGEMENT ---
+        function getStorageKey() {
+            // If logged in, use unique key. If guest, use guest key.
+            return currentUser ? `vincent_chats_${currentUser.id || 'google'}` : 'vincent_chats_guest';
+        }
+
+        function loadConversations() {
+            return JSON.parse(localStorage.getItem(getStorageKey())) || [];
+        }
+
+        function saveConversations(convs) {
+            localStorage.setItem(getStorageKey(), JSON.stringify(convs));
+        }
+
         function handleCredentialResponse(response) {
             const data = parseJwt(response.credential);
-            currentUser = { name: data.name, picture: data.picture };
+            currentUser = { id: data.sub, name: data.name, picture: data.picture };
             localStorage.setItem('vincent_google_user', JSON.stringify(currentUser));
             showUserUI();
+            currentChatId = null; // Reset view
+            renderSidebar();
+            renderChat();
         }
 
         function showUserUI() {
@@ -258,49 +269,67 @@
                 localStorage.removeItem('vincent_google_user');
                 document.getElementById('user-display').style.display = 'none';
                 document.getElementById('google-btn-container').style.display = 'flex';
+                currentChatId = null;
+                renderSidebar();
+                renderChat();
             }
         }
 
-        // --- CHAT ---
+        // --- CHAT LOGIC ---
         async function sendMessage() {
             const text = userInput.value.trim();
             if (!text && !currentFile) return;
 
-            // 1. RATE LIMIT CHECK
+            // Rate Limit
             const now = Date.now();
             if (now - lastMessageTime < RATE_LIMIT_MS) {
-                alert(`Please wait ${Math.ceil((RATE_LIMIT_MS - (now - lastMessageTime))/1000)}s before sending another message.`);
+                alert(`Please wait ${Math.ceil((RATE_LIMIT_MS - (now - lastMessageTime))/1000)}s.`);
                 return;
             }
             lastMessageTime = now;
 
-            // 2. Chat Setup
+            let conversations = loadConversations();
+
+            // Create Chat if needed
             if (!currentChatId) {
                 currentChatId = crypto.randomUUID();
-                const newChat = { id: currentChatId, title: text.substring(0, 25) + "...", messages: [] };
+                const newChat = { id: currentChatId, title: text.substring(0, 30) || "New Chat", messages: [] };
                 conversations.unshift(newChat);
+                saveConversations(conversations);
                 renderSidebar();
             }
 
-            // 3. Prepare Content
-            let fullPrompt = text;
-            let displayHtml = text.replace(/\n/g, '<br>');
-            if (currentFile) {
-                fullPrompt += `\n\n[File: ${currentFile.name}]\n\`\`\`\n${currentFile.content}\n\`\`\``;
-                displayHtml += `<div class="file-chip"><i class="fa-solid fa-file"></i> ${currentFile.name}</div>`;
+            // --- 1. CONTEXT BUILDING (MEMORY) ---
+            const chatIndex = conversations.findIndex(c => c.id === currentChatId);
+            const history = conversations[chatIndex].messages.slice(-8); // Get last 8 messages
+            
+            // Construct Context String
+            let contextBlock = "";
+            if (history.length > 0) {
+                contextBlock = "History:\n" + history.map(m => `${m.role.toUpperCase()}: ${m.content}`).join("\n") + "\n\n";
             }
+            
+            let fullPrompt = contextBlock + "User: " + text;
+            if (currentFile) fullPrompt += `\n[File: ${currentFile.name}]\n\`\`\`\n${currentFile.content}\n\`\`\``;
 
-            // 4. Update UI
-            addMsg(currentChatId, 'user', displayHtml);
+            // --- 2. UI UPDATE ---
+            const displayHtml = text.replace(/\n/g, '<br>') + (currentFile ? `<div class="file-chip"><i class="fa-solid fa-file"></i> ${currentFile.name}</div>` : '');
+            conversations[chatIndex].messages.push({ role: 'user', content: displayHtml }); // Save displayed version
+            saveConversations(conversations);
+            renderChat();
+            
             userInput.value = ''; 
             userInput.style.height = 'auto';
             currentFile = null; 
             filePreview.innerHTML = '';
             
-            // 5. Loading State
+            // --- 3. SEND ---
             sendBtn.style.display = 'none';
             stopBtn.style.display = 'flex';
-            addMsg(currentChatId, 'ai', '<span id="thinking">Thinking...</span>');
+            
+            // Add placeholder
+            conversations[chatIndex].messages.push({ role: 'ai', content: '<span id="thinking">Thinking...</span>' });
+            renderChat();
 
             try {
                 abortController = new AbortController();
@@ -318,38 +347,41 @@
                 if (!response.ok) throw new Error("Network Error");
                 const result = await response.text();
 
-                // Update AI Message
-                const chat = conversations.find(c => c.id === currentChatId);
-                chat.messages[chat.messages.length - 1].content = result;
-                saveData();
+                // Update last msg
+                conversations = loadConversations(); // Reload in case of changes
+                const targetChat = conversations.find(c => c.id === currentChatId);
+                targetChat.messages[targetChat.messages.length - 1].content = result;
+                saveConversations(conversations);
                 renderChat();
 
             } catch (err) {
-                const chat = conversations.find(c => c.id === currentChatId);
-                chat.messages[chat.messages.length - 1].content = err.name === 'AbortError' ? "Stopped." : `Error: ${err.message}`;
-                saveData();
+                conversations = loadConversations();
+                const targetChat = conversations.find(c => c.id === currentChatId);
+                targetChat.messages[targetChat.messages.length - 1].content = err.name === 'AbortError' ? "Stopped." : `Error: ${err.message}`;
+                saveConversations(conversations);
                 renderChat();
             } finally {
                 stopBtn.style.display = 'none';
                 sendBtn.style.display = 'flex';
                 abortController = null;
+                // Auto focus back to input
+                userInput.focus();
             }
         }
 
         function stopGeneration() { if(abortController) abortController.abort(); }
 
-        function addMsg(id, role, content) {
-            const chat = conversations.find(c => c.id === id);
-            chat.messages.push({ role, content });
-            saveData();
-            renderChat();
-        }
-
         function renderChat() {
             chatView.innerHTML = '';
-            if (!currentChatId) return;
+            if (!currentChatId) {
+                 chatView.innerHTML = `<div style="flex:1; display:flex; flex-direction:column; justify-content:center; align-items:center; opacity:0.5;"><h1 style="font-size:2.5rem; margin-bottom:0;">VincentAI</h1><p>Advanced Neural Interface</p></div>`;
+                 return;
+            }
 
+            const conversations = loadConversations();
             const chat = conversations.find(c => c.id === currentChatId);
+            if (!chat) return;
+
             chat.messages.forEach(msg => {
                 const div = document.createElement('div');
                 div.className = 'message';
@@ -359,7 +391,7 @@
                     avatarHtml = `<div class="msg-avatar ai"><img src="https://api.dicebear.com/9.x/bottts-neutral/svg?seed=VincentAI" alt="AI"></div>`;
                 } else {
                     if (currentUser) avatarHtml = `<div class="msg-avatar user"><img src="${currentUser.picture}" alt="U"></div>`;
-                    else avatarHtml = `<div class="msg-avatar user" style="color:white; font-weight:bold;">U</div>`;
+                    else avatarHtml = `<div class="msg-avatar user"><div style="width:100%;height:100%;background:#555;"></div></div>`;
                 }
 
                 div.innerHTML = `
@@ -378,6 +410,8 @@
         function renderSidebar() {
             const list = document.getElementById('history-list');
             list.innerHTML = '';
+            const conversations = loadConversations();
+            
             conversations.forEach(chat => {
                 const isActive = chat.id === currentChatId ? 'active' : '';
                 const item = document.createElement('div');
@@ -396,40 +430,50 @@
             });
         }
 
-        // --- MENU ACTIONS ---
-        function toggleMenu(e, id) {
-            e.stopPropagation();
-            document.querySelectorAll('.dropdown-menu').forEach(el => el.style.display = 'none');
-            document.getElementById(`menu-${id}`).style.display = 'block';
-        }
+        // --- EVENTS & MENU ---
+        function toggleMenu(e, id) { e.stopPropagation(); document.querySelectorAll('.dropdown-menu').forEach(el => el.style.display = 'none'); document.getElementById(`menu-${id}`).style.display = 'block'; }
+        
         function renameChat(id) {
             const newName = prompt("New Name:");
-            if (newName) { conversations.find(c => c.id === id).title = newName; saveData(); renderSidebar(); }
+            if (newName) { 
+                let convs = loadConversations();
+                convs.find(c => c.id === id).title = newName; 
+                saveConversations(convs); 
+                renderSidebar(); 
+            }
         }
+        
         function deleteChat(id) {
             if(confirm("Delete?")) {
-                conversations = conversations.filter(c => c.id !== id);
+                let convs = loadConversations();
+                convs = convs.filter(c => c.id !== id);
+                saveConversations(convs);
                 if (currentChatId === id) { currentChatId = null; renderChat(); }
-                saveData(); renderSidebar();
+                renderSidebar();
             }
         }
         window.onclick = () => document.querySelectorAll('.dropdown-menu').forEach(el => el.style.display = 'none');
 
-        // --- FILE HANDLING ---
+        // --- UX HELPERS ---
+        // Handle Enter vs Shift+Enter
+        userInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
         function handleFileUpload(input) {
             const file = input.files[0];
             if (!file) return;
             const reader = new FileReader();
             reader.onload = (e) => {
                 currentFile = { name: file.name, content: e.target.result };
-                filePreview.innerHTML = `<div class="file-chip"><i class="fa-solid fa-file"></i> ${file.name}</div>`;
+                filePreview.innerHTML = `<div class="file-chip"><i class="fa-solid fa-file-code"></i> ${file.name}</div>`;
             };
             reader.readAsText(file);
         }
 
-        // --- UTILS ---
-        function saveData() { localStorage.setItem('vincent_chats', JSON.stringify(conversations)); }
-        function startNewChat() { currentChatId = null; renderSidebar(); renderChat(); }
         function updateModelLabel() { document.getElementById('model-label').innerText = document.getElementById('model-select').value; }
         function autoResize(el) { el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px'; document.getElementById('send-btn').classList.toggle('active', el.value.trim().length>0); }
         function parseJwt(token) { return JSON.parse(decodeURIComponent(window.atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join(''))); }
