@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VincentAI | Advanced Neural Interface</title>
+    <title>VincentAI | Ultimate</title>
     
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -12,637 +12,472 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 
     <style>
-        /* --- THEME CONFIGURATION --- */
         :root {
-            --bg-color: #131314;
-            --sidebar-bg: #1e1f20;
-            --surface-color: #282a2c;
-            --primary-accent: #a8c7fa;
-            --text-primary: #e3e3e3;
-            --text-secondary: #c4c7c5;
-            --border-color: #444746;
-            --code-bg: #1b1b1b;
+            --bg: #0f1113;
+            --sidebar: #181a1c;
+            --surface: #252729;
+            --primary: #a8c7fa;
+            --text-main: #e3e3e3;
+            --text-sub: #9ca3af;
+            --border: #353739;
             --user-bubble: #2d2e30;
-            --hover-color: #37393b;
+            --danger: #ff8b8b;
         }
 
         * { box-sizing: border-box; }
-
-        body {
-            background-color: var(--bg-color);
-            color: var(--text-primary);
-            font-family: 'Inter', sans-serif;
-            margin: 0;
-            display: flex;
-            height: 100vh;
-            overflow: hidden;
-            font-size: 15px;
-        }
+        body { background: var(--bg); color: var(--text-main); font-family: 'Inter', sans-serif; margin: 0; display: flex; height: 100vh; overflow: hidden; }
 
         /* --- SIDEBAR --- */
-        aside {
-            width: 280px;
-            background: var(--sidebar-bg);
-            display: flex;
-            flex-direction: column;
-            padding: 1.5rem 1rem;
-            transition: transform 0.3s ease;
-            flex-shrink: 0;
-        }
-
-        .menu-toggle {
-            color: var(--text-secondary);
-            font-size: 1.2rem;
-            margin-bottom: 2rem;
-            cursor: pointer;
-            padding: 5px;
-            width: fit-content;
-        }
-
+        aside { width: 280px; background: var(--sidebar); display: flex; flex-direction: column; border-right: 1px solid var(--border); transition: 0.3s; flex-shrink: 0; }
+        
+        .sidebar-header { padding: 1.5rem; }
         .new-chat-btn {
-            background: #37393b;
-            color: var(--text-secondary);
-            border-radius: 18px;
-            padding: 12px 16px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            cursor: pointer;
-            margin-bottom: 2rem;
-            font-size: 0.9rem;
-            transition: all 0.2s;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+            background: #2b2d30; color: var(--text-sub); border-radius: 20px; padding: 12px 16px;
+            display: flex; align-items: center; gap: 12px; cursor: pointer; transition: 0.2s;
+            border: 1px solid transparent; font-size: 0.9rem;
         }
-        .new-chat-btn:hover { background: #4a4d4f; color: white; }
+        .new-chat-btn:hover { background: #353739; color: white; border-color: #555; }
 
-        .section-header {
-            font-size: 0.75rem;
-            font-weight: 600;
-            color: var(--text-primary);
-            margin: 1rem 0 0.5rem 12px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
+        .history-container { flex: 1; overflow-y: auto; padding: 0 10px; display: flex; flex-direction: column; gap: 4px; }
+        .history-label { font-size: 0.75rem; font-weight: 600; color: var(--text-sub); margin: 10px 10px 5px; text-transform: uppercase; }
 
-        .nav-item {
-            padding: 10px 16px;
-            border-radius: 20px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            color: var(--text-primary);
-            font-size: 0.9rem;
-            margin-bottom: 4px;
-            transition: background 0.2s;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+        /* Conversation Item */
+        .conv-item {
+            padding: 10px 14px; border-radius: 8px; cursor: pointer; display: flex; align-items: center;
+            justify-content: space-between; color: var(--text-main); font-size: 0.9rem; position: relative;
+            transition: background 0.1s;
         }
-        .nav-item:hover { background: var(--hover-color); }
-        .nav-item.active { background: #004a77; color: #c2e7ff; }
-        .nav-item i { width: 20px; text-align: center; font-size: 1rem; }
+        .conv-item:hover { background: var(--surface); }
+        .conv-item.active { background: #004a77; color: #c2e7ff; }
+        .conv-title { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 190px; }
+        
+        /* 3 Dots Menu */
+        .conv-menu-btn { opacity: 0; padding: 4px; border-radius: 4px; color: var(--text-sub); transition: 0.2s; }
+        .conv-item:hover .conv-menu-btn { opacity: 1; }
+        .conv-menu-btn:hover { background: rgba(255,255,255,0.2); color: white; }
 
-        .sidebar-footer {
-            margin-top: auto;
-            border-top: 1px solid var(--border-color);
-            padding-top: 10px;
+        .dropdown-menu {
+            position: absolute; right: 10px; top: 35px; background: #2d2e30; border: 1px solid var(--border);
+            border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.5); z-index: 100; display: none; min-width: 120px;
         }
+        .dropdown-item { padding: 8px 12px; font-size: 0.85rem; cursor: pointer; display: flex; gap: 8px; align-items: center; }
+        .dropdown-item:hover { background: #3d3f42; }
+        .dropdown-item.delete { color: var(--danger); }
+
+        /* Profile Section */
+        .user-profile {
+            padding: 1rem; border-top: 1px solid var(--border); display: flex; align-items: center; gap: 10px;
+            cursor: pointer; transition: background 0.2s;
+        }
+        .user-profile:hover { background: var(--surface); }
+        .avatar-circle { width: 32px; height: 32px; background: #5f6368; border-radius: 50%; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; }
 
         /* --- MAIN AREA --- */
-        main {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            position: relative;
-            background: var(--bg-color);
-        }
+        main { flex: 1; display: flex; flex-direction: column; position: relative; background: var(--bg); }
 
-        /* Header */
-        header {
-            padding: 1rem 1.5rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            height: 64px;
-        }
-
-        .model-selector {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 1.1rem;
-            color: var(--text-secondary);
-            cursor: pointer;
-            position: relative;
-            padding: 5px 10px;
-            border-radius: 8px;
-        }
-        .model-selector:hover { background: var(--surface-color); color: var(--text-primary); }
+        header { padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; height: 70px; }
         
-        select#model-dropdown {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            opacity: 0;
-            cursor: pointer;
+        .model-pill {
+            background: var(--surface); padding: 8px 16px; border-radius: 8px; display: flex; align-items: center; gap: 8px;
+            cursor: pointer; font-size: 0.9rem; color: var(--text-main); position: relative;
+        }
+        .model-pill select {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer;
         }
 
-        /* Chat Container */
-        #chat-container {
-            flex: 1;
-            overflow-y: auto;
-            padding: 1rem 15%;
-            display: flex;
-            flex-direction: column;
-            gap: 2rem;
-            scroll-behavior: smooth;
-        }
+        /* Chat */
+        #chat-view { flex: 1; overflow-y: auto; padding: 1rem 15%; display: flex; flex-direction: column; gap: 1.5rem; scroll-behavior: smooth; }
+        
+        .message { display: flex; gap: 1.2rem; line-height: 1.6; animation: fade 0.3s forwards; max-width: 100%; }
+        @keyframes fade { from {opacity:0; transform:translateY(5px);} to {opacity:1; transform:translateY(0);} }
 
-        .welcome-container {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            padding-bottom: 100px;
-        }
-        .welcome-title {
-            background: linear-gradient(90deg, #4285F4, #9B72CB, #D96570);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            font-size: 3.5rem;
-            font-weight: 500;
-            line-height: 1.2;
-            margin: 0;
-        }
-        .welcome-subtitle {
-            font-size: 3.5rem;
-            color: #444746;
-            font-weight: 500;
-            margin: 0;
-        }
+        .msg-avatar { width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; margin-top: 4px; }
+        .msg-avatar.ai { background: linear-gradient(135deg, #4285F4, #D96570); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-size: 1.2rem; }
+        .msg-avatar.user { background: #5f6368; color: white; font-size: 0.9rem; }
 
-        /* Messages */
-        .message-row {
-            display: flex;
-            gap: 1.2rem;
-            line-height: 1.6;
-            opacity: 0;
-            animation: fadeIn 0.3s forwards;
-        }
-        @keyframes fadeIn { to { opacity: 1; } }
+        .msg-content { flex: 1; min-width: 0; }
+        .sender-name { font-size: 0.85rem; font-weight: 600; margin-bottom: 4px; color: var(--text-main); }
+        .msg-text p { margin-top: 0; }
+        .msg-text pre { background: #1b1b1b; padding: 1rem; border-radius: 8px; overflow-x: auto; border: 1px solid var(--border); }
+        .msg-text code { background: #2d2d2d; padding: 2px 6px; border-radius: 4px; font-family: 'JetBrains Mono'; font-size: 0.9em; }
 
-        .avatar {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-            margin-top: 4px;
-        }
-        .avatar.ai { background: transparent; }
-        .avatar.ai i { 
-            background: linear-gradient(135deg, #4285F4, #D96570); 
-            -webkit-background-clip: text; 
-            -webkit-text-fill-color: transparent; 
-            font-size: 1.5rem; 
-        }
-        .avatar.user { background: #5f6368; color: white; font-size: 0.9rem; font-weight: bold; }
-
-        .msg-content {
-            flex: 1;
-            min-width: 0;
-            font-size: 1rem;
-        }
-        .msg-content p { margin-top: 0; margin-bottom: 1rem; }
-        .msg-content code { background: #2d2d2d; padding: 2px 6px; border-radius: 4px; font-family: 'JetBrains Mono', monospace; font-size: 0.9em; }
-        .msg-content pre { background: #1e1e1e; padding: 1rem; border-radius: 8px; overflow-x: auto; margin: 10px 0; border: 1px solid var(--border-color); }
-        .msg-content ul, .msg-content ol { padding-left: 1.5rem; }
-
-        /* File Chip */
-        .file-chip {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            background: #1e1e1e;
-            border: 1px solid var(--border-color);
-            padding: 6px 12px;
-            border-radius: 8px;
-            margin-bottom: 10px;
-            font-size: 0.85rem;
-            color: var(--primary-accent);
-        }
-
-        /* --- INPUT AREA --- */
-        .input-region {
-            padding: 0 15% 2rem 15%;
-            background: var(--bg-color);
-        }
-
+        /* Input */
+        .input-region { padding: 1rem 15% 2rem; background: var(--bg); position: relative; }
         .input-bar {
-            background: var(--surface-color);
-            border-radius: 24px;
-            padding: 12px 16px;
-            display: flex;
-            align-items: flex-end;
-            gap: 12px;
-            transition: background 0.2s, box-shadow 0.2s;
+            background: var(--surface); border-radius: 28px; padding: 10px 15px; display: flex; align-items: flex-end; gap: 10px;
+            transition: 0.2s; border: 1px solid transparent;
         }
-        .input-bar:focus-within { background: #333537; box-shadow: 0 0 0 1px #555; }
+        .input-bar:focus-within { background: #333537; border-color: #555; }
 
-        .tool-btn {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            border: none;
-            background: transparent;
-            color: var(--text-primary);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.1rem;
-            transition: background 0.2s;
-            flex-shrink: 0;
-        }
-        .tool-btn:hover { background: rgba(255,255,255,0.1); }
+        textarea { flex: 1; background: transparent; border: none; color: white; font-family: inherit; font-size: 1rem; padding: 10px 0; resize: none; max-height: 200px; outline: none; }
 
-        textarea {
-            flex: 1;
-            background: transparent;
-            border: none;
-            color: white;
-            font-family: inherit;
-            font-size: 1rem;
-            padding: 10px 0;
-            resize: none;
-            max-height: 200px;
-            outline: none;
-            line-height: 1.5;
+        .icon-btn {
+            width: 40px; height: 40px; border-radius: 50%; border: none; background: transparent; color: var(--text-main);
+            cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0;
         }
+        .icon-btn:hover { background: rgba(255,255,255,0.1); }
+        .send-btn.active { background: var(--text-main); color: var(--bg); }
 
-        .send-btn { 
-            color: var(--text-secondary); 
-            transition: all 0.2s;
+        /* Stop Button */
+        #stop-btn {
+            position: absolute; top: -50px; left: 50%; transform: translateX(-50%);
+            background: var(--surface); border: 1px solid var(--border); color: var(--text-main);
+            padding: 8px 16px; border-radius: 8px; cursor: pointer; display: none; align-items: center; gap: 8px; font-size: 0.9rem;
         }
-        .send-btn.ready { 
-            background: var(--text-primary); 
-            color: var(--bg-color); 
-        }
+        #stop-btn:hover { background: #3d3f42; }
 
-        /* --- MODAL (Settings) --- */
-        .modal-overlay {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.7);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-        }
-        .modal-box {
-            background: var(--surface-color);
-            width: 400px;
-            padding: 2rem;
-            border-radius: 16px;
-            border: 1px solid var(--border-color);
-            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-        }
-        .modal-title { font-size: 1.2rem; font-weight: 600; margin-bottom: 1rem; }
-        .modal-btn { background: var(--primary-accent); border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; color: black; font-weight: 500; width: 100%; margin-top: 1rem; }
+        /* Modals */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; justify-content: center; align-items: center; }
+        .modal { background: var(--surface); padding: 2rem; border-radius: 16px; border: 1px solid var(--border); width: 350px; text-align: center; }
+        .modal input { width: 100%; padding: 10px; margin: 15px 0; background: var(--bg); border: 1px solid var(--border); color: white; border-radius: 8px; }
+        .btn-primary { background: var(--primary); color: #000; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; width: 100%; font-weight: 600; }
 
-        #file-input { display: none; }
-        #file-preview-area { padding-left: 10px; margin-bottom: 5px; }
-
-        /* Responsive */
-        @media (max-width: 1024px) {
-            aside { display: none; }
-            #chat-container, .input-region { padding-left: 1rem; padding-right: 1rem; }
-            .welcome-title, .welcome-subtitle { font-size: 2.5rem; }
-        }
+        @media (max-width: 900px) { aside { display: none; } #chat-view, .input-region { padding-left: 1rem; padding-right: 1rem; } }
     </style>
 </head>
 <body>
 
     <aside>
-        <div class="menu-toggle"><i class="fa-solid fa-bars"></i></div>
-        
-        <div class="new-chat-btn" onclick="startNewChat()">
-            <i class="fa-solid fa-plus"></i>
-            <span>New chat</span>
+        <div class="sidebar-header">
+            <div class="new-chat-btn" onclick="startNewChat()">
+                <i class="fa-solid fa-plus"></i> New Chat
+            </div>
         </div>
-
-        <div class="section-header">Recent</div>
-        <div id="history-list" style="flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:2px;">
+        
+        <div class="history-label">Your Conversations</div>
+        <div class="history-container" id="history-list">
             </div>
 
-        <div class="section-header">Gems</div>
-        <div class="nav-item"><i class="fa-solid fa-code"></i> Coding Partner</div>
-        <div class="nav-item"><i class="fa-solid fa-pen-fancy"></i> Creative Writing</div>
-        <div class="nav-item"><i class="fa-solid fa-image"></i> Image Generator</div>
-
-        <div class="sidebar-footer">
-            <div class="nav-item"><i class="fa-solid fa-gem"></i> Gem Manager</div>
-            <div class="nav-item"><i class="fa-regular fa-circle-question"></i> Help</div>
-            <div class="nav-item" onclick="toggleSettings()"><i class="fa-solid fa-gear"></i> Settings</div>
+        <div class="user-profile" onclick="openProfileModal()">
+            <div class="avatar-circle" id="user-avatar-disp">G</div>
+            <div style="font-size: 0.9rem;" id="user-name-disp">Guest</div>
         </div>
     </aside>
 
     <main>
         <header>
-            <div class="model-selector">
-                <span id="current-model-label">Gemini Advanced (DeepSeek)</span>
-                <i class="fa-solid fa-caret-down" style="font-size:0.8em; margin-left:5px;"></i>
-                <select id="model-dropdown" onchange="updateModelLabel()">
-                    <option value="DeepSeek V3.2">Gemini Advanced (DeepSeek)</option>
-                    <option value="Llama 3.3 70B Instruct">Gemini Pro (Llama 3.3)</option>
-                    <option value="Qwen3 30B">Gemini Thinking (Qwen)</option>
-                    <option value="GPT-4o mini">Gemini Flash (GPT-4o)</option>
+            <div class="model-pill">
+                <span id="model-label">DeepSeek V3.2 (Strongest)</span>
+                <i class="fa-solid fa-caret-down"></i>
+                <select id="model-select" onchange="updateModelLabel()">
+                    <option value="DeepSeek V3.2">DeepSeek V3.2 (Strongest)</option>
+                    <option value="Llama 3.3 70B Instruct">Llama 3.3 70B (Very Strong)</option>
+                    <option value="Qwen3 30B">Qwen3 30B (Strong)</option>
+                    <option value="GPT-4o mini">GPT-4o mini (Balanced)</option>
+                    <option value="Gemma 3 12B">Gemma 3 12B (Fast)</option>
+                    <option value="Gemma2 9B">Gemma2 9B (Faster)</option>
+                    <option value="GPT-4.1 Nano">GPT-4.1 Nano (Weakest)</option>
                 </select>
             </div>
-            <div class="tool-btn" style="background:#444746; color:white; font-size:0.9rem;">VR</div>
         </header>
 
-        <div id="chat-container">
-            <div id="welcome-screen" class="welcome-container">
-                <h1 class="welcome-title">Hello, Vincent</h1>
-                <h2 class="welcome-subtitle">How can I help you today?</h2>
+        <div id="chat-view">
+            <div style="flex:1; display:flex; flex-direction:column; justify-content:center; align-items:center; opacity:0.5;">
+                <h1 style="font-size:2.5rem; margin-bottom:0;">VincentAI</h1>
+                <p>How can I help you today?</p>
             </div>
         </div>
 
         <div class="input-region">
-            <div id="file-preview-area"></div>
-            
-            <div class="input-bar">
-                <button class="tool-btn" onclick="document.getElementById('file-input').click()" title="Attach File">
-                    <i class="fa-solid fa-circle-plus"></i>
-                </button>
-                <input type="file" id="file-input" accept=".txt,.py,.js,.html,.css,.md,.json" onchange="handleFileSelect(this)">
+            <button id="stop-btn" onclick="stopGeneration()">
+                <i class="fa-solid fa-square" style="font-size: 0.8rem;"></i> Stop generating
+            </button>
 
-                <textarea id="user-input" rows="1" placeholder="Enter a prompt here" oninput="adjustHeight(this)"></textarea>
-                
-                <button class="tool-btn" title="Use Microphone"><i class="fa-solid fa-microphone"></i></button>
-                <button id="send-btn" class="tool-btn send-btn" onclick="sendMessage()">
-                    <i class="fa-solid fa-paper-plane"></i>
-                </button>
-            </div>
-            <div style="text-align:center; font-size:0.75rem; color:#666; margin-top:10px;">
-                VincentAI can make mistakes, so double-check it.
+            <div class="input-bar">
+                <button class="icon-btn" title="Attach File (Not available in demo)" style="opacity:0.5;"><i class="fa-solid fa-plus"></i></button>
+                <textarea id="user-input" rows="1" placeholder="Message VincentAI..." oninput="autoResize(this)"></textarea>
+                <button id="send-btn" class="icon-btn send-btn" onclick="sendMessage()"><i class="fa-solid fa-paper-plane"></i></button>
             </div>
         </div>
     </main>
 
-    <div id="settings-modal" class="modal-overlay">
-        <div class="modal-box">
-            <div class="modal-title">Settings</div>
-            <p style="color:#aaa; font-size:0.9rem;">
-                <strong>Backend Status:</strong> <span style="color:#a8c7fa;">Secure Connection</span><br>
-                <strong>Encryption:</strong> SHA-256 Tokenization<br>
-                <strong>Version:</strong> v3.2.0 (Gemini UI)
-            </p>
-            <div style="margin-top:1rem;">
-                <label style="color:white; font-size:0.9rem;">Clear Chat History</label>
-                <button class="modal-btn" style="background:#37393b; color:white;" onclick="clearHistory()">Clear All Data</button>
-            </div>
-            <button class="modal-btn" onclick="toggleSettings()">Close</button>
+    <div id="account-modal" class="modal-overlay">
+        <div class="modal">
+            <h3>Update Profile</h3>
+            <input type="text" id="username-input" placeholder="Enter Username">
+            <button class="btn-primary" onclick="saveProfile()">Save</button>
+            <button style="background:transparent; color:#888; border:none; margin-top:10px; cursor:pointer;" onclick="closeModal()">Cancel</button>
         </div>
     </div>
 
     <script>
-        // ==========================================
-        // CONFIGURATION
-        // ==========================================
+        // --- CONFIG ---
         const BACKEND_URL = "https://backendai-ablv.onrender.com"; 
-        
-        // SECURITY SALT - MUST MATCH BACKEND EXACTLY
         const SECRET_SALT = "vincent-gemini-ultra-secure-salt-2026-x"; 
 
-        // ==========================================
-        // STATE MANAGEMENT
-        // ==========================================
-        let chatHistory = JSON.parse(localStorage.getItem('vincent_chats')) || [];
+        // --- STATE ---
+        let user = JSON.parse(localStorage.getItem('vincent_user')) || { name: 'Guest', avatar: 'G' };
+        let conversations = JSON.parse(localStorage.getItem('vincent_conversations')) || [];
         let currentChatId = null;
-        let currentFileContent = null;
-        let currentFileName = null;
+        let abortController = null;
 
-        const chatContainer = document.getElementById('chat-container');
-        const welcomeScreen = document.getElementById('welcome-screen');
+        // --- DOM ---
+        const chatView = document.getElementById('chat-view');
         const userInput = document.getElementById('user-input');
-        const filePreview = document.getElementById('file-preview-area');
-        const historyList = document.getElementById('history-list');
+        const sendBtn = document.getElementById('send-btn');
+        const stopBtn = document.getElementById('stop-btn');
+        const modelSelect = document.getElementById('model-select');
 
-        // Initialize Markdown & Highlight
-        marked.setOptions({
-            highlight: function(code, lang) {
-                const language = highlight.getLanguage(lang) ? lang : 'plaintext';
-                return highlight.highlight(code, { language }).value;
-            }
-        });
+        // --- INIT ---
+        updateProfileUI();
+        renderSidebar();
+        marked.setOptions({ highlight: (code) => highlight.highlightAuto(code).value });
 
-        // Initialize App
-        loadHistorySidebar();
+        // --- CORE FUNCTIONS ---
 
-        // ==========================================
-        // SECURITY LOGIC (SHA-256 TOKEN)
-        // ==========================================
-        async function generateToken(msgId) {
-            const raw = msgId + SECRET_SALT;
-            const enc = new TextEncoder();
-            const data = enc.encode(raw);
-            const hash = await crypto.subtle.digest('SHA-256', data);
-            return Array.from(new Uint8Array(hash))
-                .map(b => b.toString(16).padStart(2, '0'))
-                .join('');
-        }
-
-        // ==========================================
-        // FILE HANDLING
-        // ==========================================
-        function handleFileSelect(input) {
-            const file = input.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                currentFileContent = e.target.result;
-                currentFileName = file.name;
-                
-                // Show Chip
-                filePreview.innerHTML = `
-                    <div class="file-chip">
-                        <i class="fa-solid fa-file-code"></i> ${file.name}
-                        <i class="fa-solid fa-xmark" style="cursor:pointer; margin-left:8px;" onclick="clearFile()"></i>
-                    </div>
-                `;
-            };
-            reader.readAsText(file);
-        }
-
-        function clearFile() {
-            currentFileContent = null;
-            currentFileName = null;
-            filePreview.innerHTML = '';
-            document.getElementById('file-input').value = '';
-        }
-
-        // ==========================================
-        // CHAT LOGIC
-        // ==========================================
         async function sendMessage() {
             const text = userInput.value.trim();
-            if (!text && !currentFileContent) return;
+            if (!text) return;
 
-            // UI Cleanup
-            if (welcomeScreen) welcomeScreen.style.display = 'none';
-            userInput.value = '';
-            userInput.style.height = 'auto';
-            document.getElementById('send-btn').classList.remove('ready');
-
-            // Construct Message
-            let displayMsg = text;
-            let payloadMsg = text;
-
-            if (currentFileContent) {
-                displayMsg = `${text} <div class="file-chip" style="margin-top:5px; margin-left:0;"><i class="fa-solid fa-file"></i> ${currentFileName}</div>`;
-                payloadMsg = `${text}\n\n[System: User attached file '${currentFileName}']\n\`\`\`\n${currentFileContent}\n\`\`\``;
-                clearFile();
+            // 1. Setup Chat State
+            if (!currentChatId) {
+                currentChatId = crypto.randomUUID();
+                const newChat = { 
+                    id: currentChatId, 
+                    title: text.substring(0, 25) + "...", 
+                    messages: [] 
+                };
+                conversations.unshift(newChat);
+                renderSidebar();
             }
 
-            // Append User Message
-            appendMessage('user', displayMsg);
-            saveChatToHistory(text || `File: ${currentFileName}`);
+            // 2. Add User Message
+            const chatIndex = conversations.findIndex(c => c.id === currentChatId);
+            conversations[chatIndex].messages.push({ role: 'user', content: text });
+            saveData();
+            
+            userInput.value = '';
+            userInput.style.height = 'auto';
+            renderChat(); // Re-render to show user msg
 
-            // Append AI Placeholder
-            const aiDiv = appendMessage('ai', '<i class="fa-solid fa-circle-notch fa-spin"></i>');
-            const aiContent = aiDiv.querySelector('.msg-content');
+            // 3. UI State
+            sendBtn.style.display = 'none';
+            stopBtn.style.display = 'flex';
+            
+            // 4. Add AI Placeholder
+            conversations[chatIndex].messages.push({ role: 'ai', content: '<span id="loading-dots">Thinking...</span>' });
+            renderChat();
 
             try {
-                // Generate Security Token
+                // 5. Crypto Token
                 const msgId = crypto.randomUUID();
                 const token = await generateToken(msgId);
-                const model = document.getElementById('model-dropdown').value;
+                
+                // 6. Abort Controller
+                abortController = new AbortController();
 
-                // Fetch
+                // 7. Fetch
                 const response = await fetch(`${BACKEND_URL}/chat`, {
                     method: 'POST',
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
                         id: msgId,
                         token: token,
-                        message: payloadMsg,
-                        model: model
-                    })
+                        message: text,
+                        model: modelSelect.value
+                    }),
+                    signal: abortController.signal
                 });
 
-                if (response.status === 403) throw new Error("Security Token Invalid (403)");
-                if (!response.ok) throw new Error(`Server Error ${response.status}`);
+                if (!response.ok) throw new Error("Network Error");
 
-                const rawText = await response.text();
-                
-                // Render Markdown
-                aiContent.innerHTML = marked.parse(rawText);
-                hljs.highlightAll();
+                const result = await response.text();
+
+                // 8. Update AI Message
+                const msgs = conversations[chatIndex].messages;
+                msgs[msgs.length - 1].content = result; // Replace "Thinking..." with result
+                saveData();
+                renderChat();
 
             } catch (err) {
-                aiContent.innerHTML = `<span style="color:#ef4444;">Error: ${err.message}. Ensure backend is running.</span>`;
+                const msgs = conversations[chatIndex].messages;
+                if (err.name === 'AbortError') {
+                    msgs[msgs.length - 1].content = "_Generation stopped by user._";
+                } else {
+                    msgs[msgs.length - 1].content = `**Error:** ${err.message}`;
+                }
+                saveData();
+                renderChat();
+            } finally {
+                stopBtn.style.display = 'none';
+                sendBtn.style.display = 'flex';
+                abortController = null;
             }
         }
 
-        function appendMessage(role, html) {
-            const div = document.createElement('div');
-            div.className = 'message-row';
+        function stopGeneration() {
+            if (abortController) abortController.abort();
+        }
+
+        // --- RENDERING ---
+
+        function renderChat() {
+            chatView.innerHTML = '';
             
-            const icon = role === 'user' ? 'V' : '<i class="fa-solid fa-sparkles"></i>';
-            const cls = role === 'user' ? 'user' : 'ai';
-            const name = role === 'user' ? 'You' : 'VincentAI';
-
-            div.innerHTML = `
-                <div class="avatar ${cls}">${icon}</div>
-                <div class="msg-content">
-                    <div style="font-weight:600; margin-bottom:4px; font-size:0.9rem;">${name}</div>
-                    ${html}
-                </div>
-            `;
-            chatContainer.appendChild(div);
-            chatContainer.scrollTop = chatContainer.scrollHeight;
-            return div;
-        }
-
-        // ==========================================
-        // UI HELPERS
-        // ==========================================
-        function adjustHeight(el) {
-            el.style.height = 'auto';
-            el.style.height = el.scrollHeight + 'px';
-            const btn = document.getElementById('send-btn');
-            if (el.value.trim().length > 0) btn.classList.add('ready');
-            else btn.classList.remove('ready');
-        }
-
-        function updateModelLabel() {
-            const sel = document.getElementById('model-dropdown');
-            const label = document.getElementById('current-model-label');
-            label.innerText = sel.options[sel.selectedIndex].text;
-        }
-
-        function toggleSettings() {
-            const modal = document.getElementById('settings-modal');
-            modal.style.display = modal.style.display === 'flex' ? 'none' : 'flex';
-        }
-
-        // ==========================================
-        // HISTORY & STORAGE
-        // ==========================================
-        function startNewChat() {
-            currentChatId = crypto.randomUUID();
-            chatContainer.innerHTML = '';
-            chatContainer.appendChild(welcomeScreen);
-            welcomeScreen.style.display = 'flex';
-            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-        }
-
-        function saveChatToHistory(title) {
-            // Deduplicate logic or new entry logic
-            // For this demo, we just add the title to the sidebar if it's the first msg
-            if (welcomeScreen.style.display === 'flex') return; // Don't save empty
-            
-            // Simple History Logic: Add to top of list
-            const existing = chatHistory.find(c => c.id === currentChatId);
-            if (!existing) {
-                const newChat = { id: currentChatId || crypto.randomUUID(), title: title.substring(0, 30) + '...' };
-                chatHistory.unshift(newChat);
-                localStorage.setItem('vincent_chats', JSON.stringify(chatHistory));
-                loadHistorySidebar();
+            // If new chat (no ID)
+            if (!currentChatId) {
+                chatView.innerHTML = `
+                <div style="flex:1; display:flex; flex-direction:column; justify-content:center; align-items:center; opacity:0.5;">
+                    <h1 style="font-size:2.5rem; margin-bottom:0;">VincentAI</h1>
+                    <p>How can I help you today?</p>
+                </div>`;
+                return;
             }
-        }
 
-        function loadHistorySidebar() {
-            historyList.innerHTML = '';
-            chatHistory.forEach(chat => {
+            const chat = conversations.find(c => c.id === currentChatId);
+            if (!chat) return;
+
+            chat.messages.forEach(msg => {
                 const div = document.createElement('div');
-                div.className = 'nav-item';
-                div.innerHTML = `<i class="fa-regular fa-message"></i> ${chat.title}`;
-                div.onclick = () => alert("Load Chat functionality is complex. This preserves history metadata!");
-                historyList.appendChild(div);
+                div.className = 'message';
+                
+                const isAi = msg.role === 'ai';
+                const name = isAi ? 'VincentAI' : user.name;
+                const avatarClass = isAi ? 'ai' : 'user';
+                const avatarContent = isAi ? '<i class="fa-solid fa-sparkles"></i>' : user.avatar;
+                
+                // Markdown parse only if it's AI (security + formatting)
+                // If user, just text to prevent XSS, or sanitize if using marked
+                const htmlContent = isAi ? marked.parse(msg.content) : msg.content.replace(/\n/g, '<br>');
+
+                div.innerHTML = `
+                    <div class="msg-avatar ${avatarClass}">${avatarContent}</div>
+                    <div class="msg-content">
+                        <div class="sender-name">${name}</div>
+                        <div class="msg-text">${htmlContent}</div>
+                    </div>
+                `;
+                chatView.appendChild(div);
+            });
+            
+            hljs.highlightAll();
+            chatView.scrollTop = chatView.scrollHeight;
+        }
+
+        function renderSidebar() {
+            const list = document.getElementById('history-list');
+            list.innerHTML = '';
+
+            conversations.forEach(chat => {
+                const isActive = chat.id === currentChatId ? 'active' : '';
+                const item = document.createElement('div');
+                item.className = `conv-item ${isActive}`;
+                item.onclick = (e) => loadChat(chat.id);
+                
+                item.innerHTML = `
+                    <div class="conv-title"><i class="fa-regular fa-message"></i> ${chat.title}</div>
+                    <div class="conv-menu-btn" onclick="toggleMenu(event, '${chat.id}')">
+                        <i class="fa-solid fa-ellipsis"></i>
+                    </div>
+                    <div class="dropdown-menu" id="menu-${chat.id}">
+                        <div class="dropdown-item" onclick="renameChat('${chat.id}')"><i class="fa-solid fa-pen"></i> Rename</div>
+                        <div class="dropdown-item delete" onclick="deleteChat('${chat.id}')"><i class="fa-solid fa-trash"></i> Delete</div>
+                    </div>
+                `;
+                list.appendChild(item);
             });
         }
 
-        function clearHistory() {
-            localStorage.removeItem('vincent_chats');
-            chatHistory = [];
-            loadHistorySidebar();
-            toggleSettings();
+        // --- ACTIONS ---
+
+        function loadChat(id) {
+            currentChatId = id;
+            renderSidebar();
+            renderChat();
         }
 
-        // Enter key handling
-        userInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                sendMessage();
+        function startNewChat() {
+            currentChatId = null;
+            renderSidebar();
+            renderChat();
+        }
+
+        function toggleMenu(e, id) {
+            e.stopPropagation();
+            // Close others
+            document.querySelectorAll('.dropdown-menu').forEach(el => el.style.display = 'none');
+            const menu = document.getElementById(`menu-${id}`);
+            menu.style.display = 'block';
+        }
+
+        function renameChat(id) {
+            const newName = prompt("Enter new chat name:");
+            if (newName) {
+                const chat = conversations.find(c => c.id === id);
+                if (chat) {
+                    chat.title = newName;
+                    saveData();
+                    renderSidebar();
+                }
             }
+        }
+
+        function deleteChat(id) {
+            if (confirm("Delete this conversation?")) {
+                conversations = conversations.filter(c => c.id !== id);
+                if (currentChatId === id) startNewChat();
+                saveData();
+                renderSidebar();
+            }
+        }
+
+        // Close menus on click away
+        window.onclick = () => {
+            document.querySelectorAll('.dropdown-menu').forEach(el => el.style.display = 'none');
+        };
+
+        // --- ACCOUNT ---
+
+        function updateProfileUI() {
+            document.getElementById('user-name-disp').innerText = user.name;
+            document.getElementById('user-avatar-disp').innerText = user.avatar;
+        }
+
+        function openProfileModal() { document.getElementById('account-modal').style.display = 'flex'; }
+        function closeModal() { document.getElementById('account-modal').style.display = 'none'; }
+        
+        function saveProfile() {
+            const name = document.getElementById('username-input').value;
+            if (name) {
+                user.name = name;
+                user.avatar = name.charAt(0).toUpperCase();
+                localStorage.setItem('vincent_user', JSON.stringify(user));
+                updateProfileUI();
+                renderChat(); // Update names in current chat
+                closeModal();
+            }
+        }
+
+        // --- UTILS ---
+        
+        function saveData() {
+            localStorage.setItem('vincent_conversations', JSON.stringify(conversations));
+        }
+
+        function updateModelLabel() {
+            const sel = document.getElementById('model-select');
+            document.getElementById('model-label').innerText = sel.value;
+        }
+
+        function autoResize(el) {
+            el.style.height = 'auto';
+            el.style.height = el.scrollHeight + 'px';
+            const btn = document.getElementById('send-btn');
+            if(el.value.trim()) btn.classList.add('active');
+            else btn.classList.remove('active');
+        }
+
+        userInput.addEventListener('keydown', (e) => {
+            if(e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
         });
 
+        async function generateToken(msgId) {
+            const raw = msgId + SECRET_SALT;
+            const enc = new TextEncoder();
+            const data = enc.encode(raw);
+            const hash = await crypto.subtle.digest('SHA-256', data);
+            return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('');
+        }
     </script>
 </body>
 </html>
