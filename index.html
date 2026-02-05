@@ -47,12 +47,13 @@
     <header>
         <div style="font-weight:bold; font-size:1.2rem;">VincentAI</div>
         <select id="model">
-            <option value="venice">Venice (DeepSeek)</option>
+            <option value="venice">Venice (GLM 4.6)</option>
             <option value="overchat">Overchat (GPT-5 Nano)</option>
             <option value="talkai">TalkAI (GPT-4.1)</option>
             <option value="notegpt">NoteGPT (GPT-4 Mini)</option>
             <option value="useai">UseAI (Gateway 5)</option>
             <option value="chatplus">ChatPlus (GPT-4o)</option>
+            <option value="deepai">DeepAI (Llama 3)</option>
         </select>
     </header>
 
@@ -78,7 +79,7 @@
     <script>
         // CONFIG
         const BACKEND_URL = "https://backendai-ablv.onrender.com"; // <--- CHANGE IF NEEDED
-        const GOOGLE_CLIENT_ID = "YOUR_GOOGLE_CLIENT_ID_HERE"; // <--- PASTE ID HERE
+        const GOOGLE_CLIENT_ID = "358661951943-ju5lj6ls2do7m2dnil044oppa23f1ch0.apps.googleusercontent.com"; 
 
         const chatView = document.getElementById('chat-view');
         const form = document.getElementById('form');
@@ -87,7 +88,7 @@
 
         // GOOGLE AUTH INIT
         window.onload = function() {
-            if(GOOGLE_CLIENT_ID !== "YOUR_GOOGLE_CLIENT_ID_HERE") {
+            if(GOOGLE_CLIENT_ID) {
                 google.accounts.id.initialize({ client_id: GOOGLE_CLIENT_ID, callback: handleLogin });
                 google.accounts.id.renderButton(document.getElementById("google-btn"), { theme: "outline", size: "large" });
             }
