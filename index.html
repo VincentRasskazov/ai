@@ -1,14 +1,8 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="VincentAI is a free advanced AI chat interface. Chat with DeepSeek, Llama 3, and GPT-4o with image generation and coding support.">
-    <meta name="keywords" content="VincentAI, Free AI, DeepSeek V3, Llama 3.3, GPT-4o, Chatbot, AI Dashboard, Open Source AI">
-    <meta name="author" content="Your Name">
-    <meta property="og:title" content="VincentAI | Advanced Neural Interface">
-    <meta property="og:description" content="Use top-tier AI models for free securely.">
     <title>VincentAI | Professional</title>
     
     <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -160,14 +154,16 @@
     <main>
         <header>
             <div class="model-pill">
-                <span id="model-label">DeepSeek V3.2 (Strongest)</span>
+                <span id="model-label">DeepSeek V3.2 (DeepAI)</span>
                 <i class="fa-solid fa-caret-down"></i>
                 <select id="model-select" onchange="updateModelLabel()">
-                    <option value="DeepSeek V3.2">DeepSeek V3.2 (Strongest)</option>
-                    <option value="Llama 3.3 70B Instruct">Llama 3.3 (Smart)</option>
-                    <option value="Qwen3 30B">Qwen3 30B (Thinking)</option>
-                    <option value="GPT-4o mini">GPT-4o mini (Fast)</option>
-                    <option value="GPT-4.1 Nano">GPT-4.1 Nano (Weakest)</option>
+                    <option value="deepai">DeepSeek V3.2 (DeepAI)</option>
+                    <option value="venice">Venice AI (GLM 4.6)</option>
+                    <option value="overchat">Overchat (GPT-5 Nano)</option>
+                    <option value="talkai">TalkAI (GPT-4.1)</option>
+                    <option value="notegpt">NoteGPT (GPT-4 Mini)</option>
+                    <option value="useai">UseAI (GPT-5)</option>
+                    <option value="chatplus">ChatPlus (GPT-4o)</option>
                 </select>
             </div>
         </header>
@@ -234,13 +230,12 @@
             if (savedUser) { 
                 currentUser = JSON.parse(savedUser); 
                 showUserUI(); 
-                renderSidebar(); // Reload chats for this user
+                renderSidebar(); 
             }
         };
 
         // --- AUTH & DATA MANAGEMENT ---
         function getStorageKey() {
-            // If logged in, use unique key. If guest, use guest key.
             return currentUser ? `vincent_chats_${currentUser.id || 'google'}` : 'vincent_chats_guest';
         }
 
@@ -257,7 +252,7 @@
             currentUser = { id: data.sub, name: data.name, picture: data.picture };
             localStorage.setItem('vincent_google_user', JSON.stringify(currentUser));
             showUserUI();
-            currentChatId = null; // Reset view
+            currentChatId = null; 
             renderSidebar();
             renderChat();
         }
@@ -305,11 +300,10 @@
                 renderSidebar();
             }
 
-            // --- 1. CONTEXT BUILDING (MEMORY) ---
+            // --- 1. CONTEXT BUILDING ---
             const chatIndex = conversations.findIndex(c => c.id === currentChatId);
-            const history = conversations[chatIndex].messages.slice(-8); // Get last 8 messages
+            const history = conversations[chatIndex].messages.slice(-8); 
             
-            // Construct Context String
             let contextBlock = "";
             if (history.length > 0) {
                 contextBlock = "History:\n" + history.map(m => `${m.role.toUpperCase()}: ${m.content}`).join("\n") + "\n\n";
@@ -320,7 +314,7 @@
 
             // --- 2. UI UPDATE ---
             const displayHtml = text.replace(/\n/g, '<br>') + (currentFile ? `<div class="file-chip"><i class="fa-solid fa-file"></i> ${currentFile.name}</div>` : '');
-            conversations[chatIndex].messages.push({ role: 'user', content: displayHtml }); // Save displayed version
+            conversations[chatIndex].messages.push({ role: 'user', content: displayHtml }); 
             saveConversations(conversations);
             renderChat();
             
@@ -333,7 +327,6 @@
             sendBtn.style.display = 'none';
             stopBtn.style.display = 'flex';
             
-            // Add placeholder
             conversations[chatIndex].messages.push({ role: 'ai', content: '<span id="thinking">Thinking...</span>' });
             renderChat();
 
@@ -353,8 +346,7 @@
                 if (!response.ok) throw new Error("Network Error");
                 const result = await response.text();
 
-                // Update last msg
-                conversations = loadConversations(); // Reload in case of changes
+                conversations = loadConversations(); 
                 const targetChat = conversations.find(c => c.id === currentChatId);
                 targetChat.messages[targetChat.messages.length - 1].content = result;
                 saveConversations(conversations);
@@ -370,7 +362,6 @@
                 stopBtn.style.display = 'none';
                 sendBtn.style.display = 'flex';
                 abortController = null;
-                // Auto focus back to input
                 userInput.focus();
             }
         }
@@ -461,7 +452,6 @@
         window.onclick = () => document.querySelectorAll('.dropdown-menu').forEach(el => el.style.display = 'none');
 
         // --- UX HELPERS ---
-        // Handle Enter vs Shift+Enter
         userInput.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
@@ -480,7 +470,12 @@
             reader.readAsText(file);
         }
 
-        function updateModelLabel() { document.getElementById('model-label').innerText = document.getElementById('model-select').value; }
+        function updateModelLabel() { 
+            const select = document.getElementById('model-select');
+            const label = select.options[select.selectedIndex].text;
+            document.getElementById('model-label').innerText = label;
+        }
+        
         function autoResize(el) { el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px'; document.getElementById('send-btn').classList.toggle('active', el.value.trim().length>0); }
         function parseJwt(token) { return JSON.parse(decodeURIComponent(window.atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join(''))); }
         
