@@ -347,7 +347,28 @@
         }
 
         // --- CHAT LOGIC ---
+        async function sendMessage() {
+            const text = userInput.value.trim();
+            if (!text && !currentFile) return;
 
+            // Rate Limit
+            const now = Date.now();
+            if (now - lastMessageTime < RATE_LIMIT_MS) {
+                alert(`Please wait ${Math.ceil((RATE_LIMIT_MS - (now - lastMessageTime))/1000)}s.`);
+                return;
+            }
+            lastMessageTime = now;
+
+            let conversations = loadConversations();
+
+            // Create Chat if needed
+            if (!currentChatId) {
+                currentChatId = crypto.randomUUID();
+                const newChat = { id: currentChatId, title: text.substring(0, 30) || "New Chat", messages: [] };
+                conversations.unshift(newChat);
+                saveConversations(conversations);
+                renderSidebar();
+            }
 
             // --- 1. CONTEXT BUILDING ---
             const chatIndex = conversations.findIndex(c => c.id === currentChatId);
@@ -363,7 +384,13 @@
 
             // --- 2. UI UPDATE ---
             const displayHtml = text.replace(/\n/g, '<br>') + (currentFile ? `<div class="file-chip"><i class="fa-solid fa-file"></i> ${currentFile.name}</div>` : '');
+            
+            // Push User Message
             conversations[chatIndex].messages.push({ role: 'user', content: displayHtml }); 
+            
+            // Push AI Placeholder
+            conversations[chatIndex].messages.push({ role: 'ai', content: '<span id="thinking">Thinking...</span>' });
+            
             saveConversations(conversations);
             renderChat();
             
@@ -375,14 +402,6 @@
             // --- 3. SEND ---
             sendBtn.style.display = 'none';
             stopBtn.style.display = 'flex';
-            
-            // Push "Thinking..." placeholder
-            conversations[chatIndex].messages.push({ role: 'ai', content: '<span id="thinking">Thinking...</span>' });
-            
-            // --- FIX IS HERE: Save the 'Thinking' bubble to memory ---
-            saveConversations(conversations); 
-            
-            renderChat();
 
             try {
                 abortController = new AbortController();
@@ -403,82 +422,20 @@
                 // Update the last message (which is now correctly the AI placeholder)
                 conversations = loadConversations(); 
                 const targetChat = conversations.find(c => c.id === currentChatId);
-                targetChat.messages[targetChat.messages.length - 1].content = result;
-                saveConversations(conversations);
-                renderChat();
+                if (targetChat) {
+                    targetChat.messages[targetChat.messages.length - 1].content = result;
+                    saveConversations(conversations);
+                    renderChat();
+                }
 
             } catch (err) {
                 conversations = loadConversations();
                 const targetChat = conversations.find(c => c.id === currentChatId);
-                targetChat.messages[targetChat.messages.length - 1].content = err.name === 'AbortError' ? "Stopped." : `Error: ${err.message}`;
-                saveConversations(conversations);
-                renderChat();
-            } finally {
-                stopBtn.style.display = 'none';
-                sendBtn.style.display = 'flex';
-                abortController = null;
-                userInput.focus();
-            }
-        }
-
-            // --- 1. CONTEXT BUILDING ---
-            const chatIndex = conversations.findIndex(c => c.id === currentChatId);
-            const history = conversations[chatIndex].messages.slice(-8); 
-            
-            let contextBlock = "";
-            if (history.length > 0) {
-                contextBlock = "History:\n" + history.map(m => `${m.role.toUpperCase()}: ${m.content}`).join("\n") + "\n\n";
-            }
-            
-            let fullPrompt = contextBlock + "User: " + text;
-            if (currentFile) fullPrompt += `\n[File: ${currentFile.name}]\n\`\`\`\n${currentFile.content}\n\`\`\``;
-
-            // --- 2. UI UPDATE ---
-            const displayHtml = text.replace(/\n/g, '<br>') + (currentFile ? `<div class="file-chip"><i class="fa-solid fa-file"></i> ${currentFile.name}</div>` : '');
-            conversations[chatIndex].messages.push({ role: 'user', content: displayHtml }); 
-            saveConversations(conversations);
-            renderChat();
-            
-            userInput.value = ''; 
-            userInput.style.height = 'auto';
-            currentFile = null; 
-            filePreview.innerHTML = '';
-            
-            // --- 3. SEND ---
-            sendBtn.style.display = 'none';
-            stopBtn.style.display = 'flex';
-            
-            conversations[chatIndex].messages.push({ role: 'ai', content: '<span id="thinking">Thinking...</span>' });
-            renderChat();
-
-            try {
-                abortController = new AbortController();
-                const msgId = crypto.randomUUID();
-                const token = await generateToken(msgId);
-                const model = document.getElementById('model-select').value;
-
-                const response = await fetch(`${BACKEND_URL}/chat`, {
-                    method: 'POST',
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ id: msgId, token: token, message: fullPrompt, model: model }),
-                    signal: abortController.signal
-                });
-
-                if (!response.ok) throw new Error("Network Error");
-                const result = await response.text();
-
-                conversations = loadConversations(); 
-                const targetChat = conversations.find(c => c.id === currentChatId);
-                targetChat.messages[targetChat.messages.length - 1].content = result;
-                saveConversations(conversations);
-                renderChat();
-
-            } catch (err) {
-                conversations = loadConversations();
-                const targetChat = conversations.find(c => c.id === currentChatId);
-                targetChat.messages[targetChat.messages.length - 1].content = err.name === 'AbortError' ? "Stopped." : `Error: ${err.message}`;
-                saveConversations(conversations);
-                renderChat();
+                if (targetChat) {
+                    targetChat.messages[targetChat.messages.length - 1].content = err.name === 'AbortError' ? "Stopped." : `Error: ${err.message}`;
+                    saveConversations(conversations);
+                    renderChat();
+                }
             } finally {
                 stopBtn.style.display = 'none';
                 sendBtn.style.display = 'flex';
