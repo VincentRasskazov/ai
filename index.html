@@ -347,28 +347,7 @@
         }
 
         // --- CHAT LOGIC ---
-async function sendMessage() {
-            const text = userInput.value.trim();
-            if (!text && !currentFile) return;
 
-            // Rate Limit
-            const now = Date.now();
-            if (now - lastMessageTime < RATE_LIMIT_MS) {
-                alert(`Please wait ${Math.ceil((RATE_LIMIT_MS - (now - lastMessageTime))/1000)}s.`);
-                return;
-            }
-            lastMessageTime = now;
-
-            let conversations = loadConversations();
-
-            // Create Chat if needed
-            if (!currentChatId) {
-                currentChatId = crypto.randomUUID();
-                const newChat = { id: currentChatId, title: text.substring(0, 30) || "New Chat", messages: [] };
-                conversations.unshift(newChat);
-                saveConversations(conversations);
-                renderSidebar();
-            }
 
             // --- 1. CONTEXT BUILDING ---
             const chatIndex = conversations.findIndex(c => c.id === currentChatId);
