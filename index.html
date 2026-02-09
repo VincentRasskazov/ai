@@ -23,6 +23,7 @@
             --text-sub: #9ca3af;
             --border: #353739;
             --danger: #ff8b8b;
+            --warning: #f2b93b;
             --user-bubble: #004a77;
         }
 
@@ -73,13 +74,28 @@
         /* --- MAIN AREA --- */
         main { flex: 1; display: flex; flex-direction: column; position: relative; background: var(--bg); }
 
-        header { padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; height: 70px; }
+        header { padding: 1rem 2rem; display: flex; flex-direction:column; justify-content: center; align-items: center; height: auto; min-height: 80px; gap: 10px;}
         
         .model-pill {
             background: var(--surface); padding: 8px 16px; border-radius: 8px; display: flex; align-items: center; gap: 8px;
             cursor: pointer; font-size: 0.9rem; color: var(--text-main); position: relative;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
         .model-pill select { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+
+        #warning-banner {
+            display: none;
+            background: rgba(242, 185, 59, 0.15);
+            border: 1px solid var(--warning);
+            color: var(--warning);
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            align-items: center;
+            gap: 8px;
+            max-width: 600px;
+            animation: fade 0.3s forwards;
+        }
 
         /* --- CHAT VIEW --- */
         #chat-view { 
@@ -222,19 +238,27 @@
                 <span id="model-label">DeepSeek V3.2</span>
                 <i class="fa-solid fa-caret-down"></i>
                 <select id="model-select" onchange="updateModelLabel()">
-                    <option value="deepai-deepseek">DeepSeek V3.2</option>
-                    <option value="deepai-llama">Llama 3.3 70B</option>
-                    <option value="deepai-qwen">Qwen3 30B</option>
-                    <option value="deepai-4omini">GPT-4o mini</option>
-                    <option value="deepai-gemma3">Gemma 3 12B</option>
-                    <option value="deepai-gemma2">Gemma 2 9B</option>
-                    <option value="deepai-4nano">GPT-4.1 Nano</option>
+                    <optgroup label="Fast & Reliable">
+                        <option value="deepai-deepseek">DeepSeek V3.2</option>
+                        <option value="deepai-llama">Llama 3.3 70B</option>
+                        <option value="deepai-qwen">Qwen3 30B</option>
+                        <option value="deepai-4omini">GPT-4o mini</option>
+                        <option value="talkai">GPT-4.1 (TalkAI)</option>
+                        <option value="chatplus">GPT-4o (ChatPlus)</option>
+                    </optgroup>
                     
-                    <option value="talkai">GPT-4.1</option>
-                    <option value="notegpt">GPT-4 Mini</option>
-                    <option value="useai">GPT-5</option>
-                    <option value="chatplus">GPT-4o</option>
+                    <optgroup label="Experimental / Free">
+                        <option value="horde">Stable Horde (Volunteer GPU)</option>
+                        <option value="copilot">Microsoft Copilot</option>
+                        <option value="g4f">ChatGPT (Free/Scraped)</option>
+                        <option value="useai">GPT-5 (Gateway)</option>
+                    </optgroup>
                 </select>
+            </div>
+            
+            <div id="warning-banner">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                <span><b>Note:</b> Stable Horde relies on volunteer GPUs. Generation may be slow or fail if no workers are available. Data is public to workers.</span>
             </div>
         </header>
 
@@ -351,7 +375,7 @@
             const text = userInput.value.trim();
             if (!text && !currentFile) return;
 
-            // Rate Limit
+            // Client-Side Rate Limit (Double check)
             const now = Date.now();
             if (now - lastMessageTime < RATE_LIMIT_MS) {
                 alert(`Please wait ${Math.ceil((RATE_LIMIT_MS - (now - lastMessageTime))/1000)}s.`);
@@ -416,10 +440,19 @@
                     signal: abortController.signal
                 });
 
-                if (!response.ok) throw new Error("Network Error");
+                // Improved Error Handling for 429 and others
+                if (!response.ok) {
+                    let errorMsg = "Network Error";
+                    try {
+                        const errJson = await response.json();
+                        errorMsg = errJson.error || response.statusText;
+                    } catch(e) { errorMsg = response.statusText; }
+                    throw new Error(errorMsg);
+                }
+                
                 const result = await response.text();
 
-                // Update the last message (which is now correctly the AI placeholder)
+                // Update the last message
                 conversations = loadConversations(); 
                 const targetChat = conversations.find(c => c.id === currentChatId);
                 if (targetChat) {
@@ -551,7 +584,17 @@
         function updateModelLabel() { 
             const select = document.getElementById('model-select');
             const label = select.options[select.selectedIndex].text;
+            const value = select.value;
+            
             document.getElementById('model-label').innerText = label;
+            
+            // Warning Logic
+            const banner = document.getElementById('warning-banner');
+            if (value === 'horde') {
+                banner.style.display = 'flex';
+            } else {
+                banner.style.display = 'none';
+            }
         }
         
         function autoResize(el) { el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px'; document.getElementById('send-btn').classList.toggle('active', el.value.trim().length>0); }
