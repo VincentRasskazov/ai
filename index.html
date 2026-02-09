@@ -3,10 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VincentAI | Professional</title>
     
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <title>VincentAI | Advanced Neural Interface</title>
+    <meta name="description" content="VincentAI is a professional, multi-model AI interface offering access to DeepSeek, GPT-4, Claude, and more through a unified, secure dashboard.">
+    <meta name="keywords" content="AI, LLM, Chatbot, DeepSeek, GPT-4, Llama 3, Artificial Intelligence, Neural Interface">
+    <meta property="og:title" content="VincentAI | Professional">
+    <meta property="og:description" content="Access the world's best AI models in one place.">
+    <meta name="robots" content="index, follow">
 
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
@@ -25,6 +30,7 @@
             --danger: #ff8b8b;
             --warning: #f2b93b;
             --user-bubble: #004a77;
+            --temp-mode-color: #8e44ad;
         }
 
         * { box-sizing: border-box; }
@@ -74,8 +80,10 @@
         /* --- MAIN AREA --- */
         main { flex: 1; display: flex; flex-direction: column; position: relative; background: var(--bg); }
 
-        header { padding: 1rem 2rem; display: flex; flex-direction:column; justify-content: center; align-items: center; height: auto; min-height: 80px; gap: 10px;}
+        header { padding: 1rem 2rem; display: flex; flex-direction:column; justify-content: center; align-items: center; height: auto; min-height: 80px; gap: 10px; position: relative; }
         
+        .model-container { display: flex; gap: 10px; align-items: center; }
+
         .model-pill {
             background: var(--surface); padding: 8px 16px; border-radius: 8px; display: flex; align-items: center; gap: 8px;
             cursor: pointer; font-size: 0.9rem; color: var(--text-main); position: relative;
@@ -83,96 +91,48 @@
         }
         .model-pill select { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
 
+        #settings-btn {
+            background: var(--surface); border: none; color: var(--text-sub); width: 36px; height: 36px; border-radius: 50%;
+            cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s;
+        }
+        #settings-btn:hover { background: #353739; color: white; }
+
+        /* Temp Mode Styling */
+        body.temp-mode main { border: 2px solid var(--temp-mode-color); }
+        body.temp-mode .model-pill { border: 1px solid var(--temp-mode-color); color: var(--temp-mode-color); }
+        body.temp-mode .message.user .msg-text { background: var(--temp-mode-color); }
+
         #warning-banner {
             display: none;
-            background: rgba(242, 185, 59, 0.15);
-            border: 1px solid var(--warning);
-            color: var(--warning);
-            padding: 8px 12px;
-            border-radius: 8px;
-            font-size: 0.8rem;
-            align-items: center;
-            gap: 8px;
-            max-width: 600px;
-            animation: fade 0.3s forwards;
+            background: rgba(242, 185, 59, 0.15); border: 1px solid var(--warning); color: var(--warning);
+            padding: 8px 12px; border-radius: 8px; font-size: 0.8rem; align-items: center; gap: 8px;
+            max-width: 600px; animation: fade 0.3s forwards;
         }
 
         /* --- CHAT VIEW --- */
-        #chat-view { 
-            flex: 1; 
-            overflow-y: auto; 
-            padding: 20px 15%; 
-            display: flex; 
-            flex-direction: column; 
-            gap: 20px; 
-            scroll-behavior: smooth; 
-        }
+        #chat-view { flex: 1; overflow-y: auto; padding: 20px 15%; display: flex; flex-direction: column; gap: 20px; scroll-behavior: smooth; }
         
-        /* Message Wrapper */
-        .message { 
-            display: flex; 
-            gap: 12px; 
-            animation: fade 0.3s forwards; 
-            width: fit-content; 
-            max-width: 85%;
-        }
-        
-        /* AI (Left) */
-        .message.ai {
-            align-self: flex-start; /* Stays on left */
-            flex-direction: row;
-        }
-        
-        /* User (Right) */
-        .message.user {
-            align-self: flex-end; /* Moves to right */
-            flex-direction: row-reverse; /* Flip avatar to right side */
-        }
+        .message { display: flex; gap: 12px; animation: fade 0.3s forwards; width: fit-content; max-width: 85%; }
+        .message.ai { align-self: flex-start; flex-direction: row; }
+        .message.user { align-self: flex-end; flex-direction: row-reverse; }
 
         @keyframes fade { from {opacity:0; transform:translateY(5px);} to {opacity:1; transform:translateY(0);} }
 
-        /* Avatars */
         .msg-avatar { width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0; overflow: hidden; display: flex; align-items: center; justify-content: center; }
         .msg-avatar.ai { background: linear-gradient(135deg, #4285F4, #D96570); } 
         .msg-avatar.ai img { width: 100%; height: 100%; object-fit: cover; }
         .msg-avatar.user { background: #5f6368; }
         .msg-avatar.user img { width: 100%; height: 100%; object-fit: cover; }
 
-        /* Message Bubbles */
-        .msg-content { 
-            flex: 1; 
-            min-width: 0; 
-            display: flex; 
-            flex-direction: column; 
-        }
-        
-        .message.user .msg-content { align-items: flex-end; } /* Align user text to right inside bubble */
+        .msg-content { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+        .message.user .msg-content { align-items: flex-end; }
 
         .sender-name { font-size: 0.8rem; font-weight: 600; margin-bottom: 4px; color: var(--text-sub); }
         
-        .msg-text { 
-            padding: 10px 16px; 
-            border-radius: 16px; 
-            line-height: 1.5; 
-            font-size: 0.95rem;
-            word-wrap: break-word;
-        }
-
-        /* AI Bubble Color */
-        .message.ai .msg-text {
-            background: var(--surface);
-            color: var(--text-main);
-            border-top-left-radius: 4px;
-        }
-
-        /* User Bubble Color */
-        .message.user .msg-text {
-            background: var(--user-bubble);
-            color: white;
-            border-top-right-radius: 4px;
-        }
+        .msg-text { padding: 10px 16px; border-radius: 16px; line-height: 1.5; font-size: 0.95rem; word-wrap: break-word; }
+        .message.ai .msg-text { background: var(--surface); color: var(--text-main); border-top-left-radius: 4px; }
+        .message.user .msg-text { background: var(--user-bubble); color: white; border-top-right-radius: 4px; }
         
-        /* Markdown Styles inside Bubbles */
         .msg-text p { margin: 0 0 10px 0; }
         .msg-text p:last-child { margin-bottom: 0; }
         .msg-text pre { background: #1b1b1b; padding: 1rem; border-radius: 8px; overflow-x: auto; border: 1px solid var(--border); margin: 10px 0; }
@@ -206,10 +166,75 @@
             border-radius: 8px; border: 1px solid var(--border); margin-bottom: 8px; font-size: 0.85rem; color: var(--primary);
         }
 
+        /* --- SETTINGS MODAL --- */
+        #settings-modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7); z-index: 1000; justify-content: center; align-items: center;
+        }
+        .modal-content {
+            background: var(--surface); padding: 2rem; border-radius: 12px; width: 90%; max-width: 500px;
+            border: 1px solid var(--border); box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+        .modal-title { font-size: 1.2rem; font-weight: 600; }
+        .close-modal { cursor: pointer; font-size: 1.5rem; color: var(--text-sub); }
+        
+        .setting-item { margin-bottom: 1.5rem; }
+        .setting-label { display: block; margin-bottom: 8px; font-weight: 500; font-size: 0.9rem; color: var(--text-sub); }
+        .setting-input { 
+            width: 100%; background: #1b1b1b; border: 1px solid var(--border); color: white; 
+            padding: 10px; border-radius: 8px; font-family: inherit; resize: vertical; min-height: 80px; 
+        }
+
+        .toggle-switch {
+            display: flex; align-items: center; justify-content: space-between; cursor: pointer;
+            padding: 10px; background: #2d2f31; border-radius: 8px;
+        }
+        .toggle-knob {
+            width: 40px; height: 20px; background: #555; border-radius: 20px; position: relative; transition: 0.3s;
+        }
+        .toggle-knob::after {
+            content: ''; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px;
+            background: white; border-radius: 50%; transition: 0.3s;
+        }
+        .toggle-switch.active .toggle-knob { background: var(--temp-mode-color); }
+        .toggle-switch.active .toggle-knob::after { transform: translateX(20px); }
+
+        .save-btn {
+            background: var(--primary); color: #000; border: none; width: 100%; padding: 12px;
+            border-radius: 8px; font-weight: 600; cursor: pointer; margin-top: 1rem;
+        }
+
         @media (max-width: 900px) { aside { display: none; } #chat-view, .input-region { padding-left: 1rem; padding-right: 1rem; } }
     </style>
 </head>
 <body>
+
+    <div id="settings-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">Settings</div>
+                <div class="close-modal" onclick="toggleSettings()">&times;</div>
+            </div>
+            
+            <div class="setting-item">
+                <label class="setting-label">Custom System Instructions</label>
+                <textarea id="sys-instruction" class="setting-input" placeholder="E.g., 'You are a sarcastic pirate' or 'Always code in Python'"></textarea>
+            </div>
+
+            <div class="setting-item">
+                <div class="toggle-switch" id="temp-toggle" onclick="toggleTempMode()">
+                    <div>
+                        <div style="font-weight:500;">Incognito / Temp Mode</div>
+                        <div style="font-size:0.8rem; color:var(--text-sub);">Chats won't be saved history.</div>
+                    </div>
+                    <div class="toggle-knob"></div>
+                </div>
+            </div>
+
+            <button class="save-btn" onclick="saveSettings()">Save Changes</button>
+        </div>
+    </div>
 
     <aside>
         <div class="sidebar-header">
@@ -234,26 +259,28 @@
 
     <main>
         <header>
-            <div class="model-pill">
-                <span id="model-label">DeepSeek V3.2</span>
-                <i class="fa-solid fa-caret-down"></i>
-                <select id="model-select" onchange="updateModelLabel()">
-                    <optgroup label="Fast & Reliable">
-                        <option value="deepai-deepseek">DeepSeek V3.2</option>
-                        <option value="deepai-llama">Llama 3.3 70B</option>
-                        <option value="deepai-qwen">Qwen3 30B</option>
-                        <option value="deepai-4omini">GPT-4o mini</option>
-                        <option value="talkai">GPT-4.1 (TalkAI)</option>
-                        <option value="chatplus">GPT-4o (ChatPlus)</option>
-                    </optgroup>
-                    
-                    <optgroup label="Experimental / Free">
-                        <option value="horde">Stable Horde (Volunteer GPU)</option>
-                        <option value="copilot">Microsoft Copilot</option>
-                        <option value="g4f">ChatGPT (Free/Scraped)</option>
-                        <option value="useai">GPT-5 (Gateway)</option>
-                    </optgroup>
-                </select>
+            <div class="model-container">
+                <div class="model-pill">
+                    <span id="model-label">DeepSeek V3.2</span>
+                    <i class="fa-solid fa-caret-down"></i>
+                    <select id="model-select" onchange="updateModelLabel()">
+                        <optgroup label="Fast & Reliable">
+                            <option value="deepai-deepseek">DeepSeek V3.2</option>
+                            <option value="deepai-llama">Llama 3.3 70B</option>
+                            <option value="deepai-qwen">Qwen3 30B</option>
+                            <option value="deepai-4omini">GPT-4o mini</option>
+                            <option value="talkai">GPT-4.1 (TalkAI)</option>
+                            <option value="chatplus">GPT-4o (ChatPlus)</option>
+                        </optgroup>
+                        <optgroup label="Experimental / Free">
+                            <option value="horde">Stable Horde (Volunteer GPU)</option>
+                            <option value="copilot">Microsoft Copilot</option>
+                            <option value="g4f">ChatGPT (Free/Scraped)</option>
+                            <option value="useai">GPT-5 (Gateway)</option>
+                        </optgroup>
+                    </select>
+                </div>
+                <button id="settings-btn" onclick="toggleSettings()"><i class="fa-solid fa-cog"></i></button>
             </div>
             
             <div id="warning-banner">
@@ -290,7 +317,6 @@
         // --- CONFIG ---
         const BACKEND_URL = "https://backendai-ablv.onrender.com"; 
         const SECRET_SALT = "vincent-gemini-ultra-secure-salt-2026-x"; 
-        // 🛑 PASTE YOUR GOOGLE CLIENT ID BELOW
         const GOOGLE_CLIENT_ID = "358661951943-ju5lj6ls2do7m2dnil044oppa23f1ch0.apps.googleusercontent.com"; 
 
         // --- STATE ---
@@ -299,9 +325,10 @@
         let abortController = null;
         let currentFile = null;
         let lastMessageTime = 0;
+        let isTempMode = false;
+        let tempChatHistory = []; // For temp mode
         const RATE_LIMIT_MS = 3000; 
 
-        // --- DOM ---
         const chatView = document.getElementById('chat-view');
         const userInput = document.getElementById('user-input');
         const sendBtn = document.getElementById('send-btn');
@@ -313,33 +340,26 @@
             renderSidebar();
             marked.setOptions({ highlight: (code) => highlight.highlightAuto(code).value });
             
-            // Google Auth Init
             if(GOOGLE_CLIENT_ID !== "YOUR_GOOGLE_CLIENT_ID_HERE") {
                 google.accounts.id.initialize({ client_id: GOOGLE_CLIENT_ID, callback: handleCredentialResponse });
                 google.accounts.id.renderButton(document.getElementById("google-btn-container"), { theme: "outline", size: "large" });
             }
 
-            // Restore User
             const savedUser = localStorage.getItem('vincent_google_user');
             if (savedUser) { 
                 currentUser = JSON.parse(savedUser); 
                 showUserUI(); 
                 renderSidebar(); 
             }
+
+            // Load Settings
+            document.getElementById('sys-instruction').value = localStorage.getItem('vincent_sys_instruction') || '';
         };
 
         // --- AUTH & DATA MANAGEMENT ---
-        function getStorageKey() {
-            return currentUser ? `vincent_chats_${currentUser.id || 'google'}` : 'vincent_chats_guest';
-        }
-
-        function loadConversations() {
-            return JSON.parse(localStorage.getItem(getStorageKey())) || [];
-        }
-
-        function saveConversations(convs) {
-            localStorage.setItem(getStorageKey(), JSON.stringify(convs));
-        }
+        function getStorageKey() { return currentUser ? `vincent_chats_${currentUser.id || 'google'}` : 'vincent_chats_guest'; }
+        function loadConversations() { return JSON.parse(localStorage.getItem(getStorageKey())) || []; }
+        function saveConversations(convs) { if(!isTempMode) localStorage.setItem(getStorageKey(), JSON.stringify(convs)); }
 
         function handleCredentialResponse(response) {
             const data = parseJwt(response.credential);
@@ -370,12 +390,40 @@
             }
         }
 
+        // --- SETTINGS LOGIC ---
+        function toggleSettings() {
+            const modal = document.getElementById('settings-modal');
+            modal.style.display = modal.style.display === 'flex' ? 'none' : 'flex';
+        }
+
+        function toggleTempMode() {
+            const btn = document.getElementById('temp-toggle');
+            isTempMode = !isTempMode;
+            btn.classList.toggle('active', isTempMode);
+        }
+
+        function saveSettings() {
+            const instructions = document.getElementById('sys-instruction').value;
+            localStorage.setItem('vincent_sys_instruction', instructions);
+            
+            if (isTempMode) {
+                document.body.classList.add('temp-mode');
+                currentChatId = 'temp';
+                tempChatHistory = [];
+                renderChat(); // Clear view
+            } else {
+                document.body.classList.remove('temp-mode');
+                if(currentChatId === 'temp') currentChatId = null;
+            }
+            toggleSettings();
+            renderSidebar(); // Refresh sidebar to show/hide selection
+        }
+
         // --- CHAT LOGIC ---
         async function sendMessage() {
             const text = userInput.value.trim();
             if (!text && !currentFile) return;
 
-            // Client-Side Rate Limit (Double check)
             const now = Date.now();
             if (now - lastMessageTime < RATE_LIMIT_MS) {
                 alert(`Please wait ${Math.ceil((RATE_LIMIT_MS - (now - lastMessageTime))/1000)}s.`);
@@ -383,50 +431,54 @@
             }
             lastMessageTime = now;
 
-            let conversations = loadConversations();
-
-            // Create Chat if needed
-            if (!currentChatId) {
-                currentChatId = crypto.randomUUID();
-                const newChat = { id: currentChatId, title: text.substring(0, 30) || "New Chat", messages: [] };
-                conversations.unshift(newChat);
-                saveConversations(conversations);
-                renderSidebar();
+            // Chat Setup
+            let historyToUse = [];
+            
+            if (isTempMode) {
+                historyToUse = tempChatHistory.slice(-8);
+            } else {
+                let conversations = loadConversations();
+                if (!currentChatId || currentChatId === 'temp') {
+                    currentChatId = crypto.randomUUID();
+                    const newChat = { id: currentChatId, title: text.substring(0, 30) || "New Chat", messages: [] };
+                    conversations.unshift(newChat);
+                    saveConversations(conversations);
+                    renderSidebar();
+                }
+                const chat = conversations.find(c => c.id === currentChatId);
+                historyToUse = chat.messages.slice(-8);
             }
 
-            // --- 1. CONTEXT BUILDING ---
-            const chatIndex = conversations.findIndex(c => c.id === currentChatId);
-            const history = conversations[chatIndex].messages.slice(-8); 
-            
+            // --- CONTEXT & INSTRUCTIONS ---
+            const sysInstruction = localStorage.getItem('vincent_sys_instruction');
             let contextBlock = "";
-            if (history.length > 0) {
-                contextBlock = "History:\n" + history.map(m => `${m.role.toUpperCase()}: ${m.content}`).join("\n") + "\n\n";
+            if (sysInstruction) contextBlock += `[System Instruction: ${sysInstruction}]\n\n`;
+            if (historyToUse.length > 0) {
+                contextBlock += "History:\n" + historyToUse.map(m => `${m.role.toUpperCase()}: ${m.content}`).join("\n") + "\n\n";
             }
             
             let fullPrompt = contextBlock + "User: " + text;
             if (currentFile) fullPrompt += `\n[File: ${currentFile.name}]\n\`\`\`\n${currentFile.content}\n\`\`\``;
 
-            // --- 2. UI UPDATE ---
+            // --- UI UPDATE ---
             const displayHtml = text.replace(/\n/g, '<br>') + (currentFile ? `<div class="file-chip"><i class="fa-solid fa-file"></i> ${currentFile.name}</div>` : '');
             
-            // Push User Message
-            conversations[chatIndex].messages.push({ role: 'user', content: displayHtml }); 
+            if (isTempMode) {
+                tempChatHistory.push({ role: 'user', content: displayHtml });
+                tempChatHistory.push({ role: 'ai', content: '<span id="thinking">Thinking...</span>' });
+            } else {
+                let conversations = loadConversations();
+                const chat = conversations.find(c => c.id === currentChatId);
+                chat.messages.push({ role: 'user', content: displayHtml });
+                chat.messages.push({ role: 'ai', content: '<span id="thinking">Thinking...</span>' });
+                saveConversations(conversations);
+            }
             
-            // Push AI Placeholder
-            conversations[chatIndex].messages.push({ role: 'ai', content: '<span id="thinking">Thinking...</span>' });
-            
-            saveConversations(conversations);
             renderChat();
-            
-            userInput.value = ''; 
-            userInput.style.height = 'auto';
-            currentFile = null; 
-            filePreview.innerHTML = '';
-            
-            // --- 3. SEND ---
-            sendBtn.style.display = 'none';
-            stopBtn.style.display = 'flex';
+            userInput.value = ''; userInput.style.height = 'auto'; currentFile = null; filePreview.innerHTML = '';
+            sendBtn.style.display = 'none'; stopBtn.style.display = 'flex';
 
+            // --- API CALL ---
             try {
                 abortController = new AbortController();
                 const msgId = crypto.randomUUID();
@@ -440,40 +492,42 @@
                     signal: abortController.signal
                 });
 
-                // Improved Error Handling for 429 and others
                 if (!response.ok) {
                     let errorMsg = "Network Error";
-                    try {
-                        const errJson = await response.json();
-                        errorMsg = errJson.error || response.statusText;
-                    } catch(e) { errorMsg = response.statusText; }
+                    try { const errJson = await response.json(); errorMsg = errJson.error || response.statusText; } catch(e) {}
                     throw new Error(errorMsg);
                 }
                 
                 const result = await response.text();
 
-                // Update the last message
-                conversations = loadConversations(); 
-                const targetChat = conversations.find(c => c.id === currentChatId);
-                if (targetChat) {
-                    targetChat.messages[targetChat.messages.length - 1].content = result;
-                    saveConversations(conversations);
-                    renderChat();
+                // Save Result
+                if (isTempMode) {
+                    tempChatHistory[tempChatHistory.length - 1].content = result;
+                } else {
+                    let conversations = loadConversations(); 
+                    const chat = conversations.find(c => c.id === currentChatId);
+                    if (chat) {
+                        chat.messages[chat.messages.length - 1].content = result;
+                        saveConversations(conversations);
+                    }
                 }
+                renderChat();
 
             } catch (err) {
-                conversations = loadConversations();
-                const targetChat = conversations.find(c => c.id === currentChatId);
-                if (targetChat) {
-                    targetChat.messages[targetChat.messages.length - 1].content = err.name === 'AbortError' ? "Stopped." : `Error: ${err.message}`;
-                    saveConversations(conversations);
-                    renderChat();
+                const errMsg = err.name === 'AbortError' ? "Stopped." : `Error: ${err.message}`;
+                if (isTempMode) {
+                    tempChatHistory[tempChatHistory.length - 1].content = errMsg;
+                } else {
+                    let conversations = loadConversations();
+                    const chat = conversations.find(c => c.id === currentChatId);
+                    if(chat) {
+                        chat.messages[chat.messages.length - 1].content = errMsg;
+                        saveConversations(conversations);
+                    }
                 }
+                renderChat();
             } finally {
-                stopBtn.style.display = 'none';
-                sendBtn.style.display = 'flex';
-                abortController = null;
-                userInput.focus();
+                stopBtn.style.display = 'none'; sendBtn.style.display = 'flex'; abortController = null; userInput.focus();
             }
         }
 
@@ -481,31 +535,32 @@
 
         function renderChat() {
             chatView.innerHTML = '';
-            if (!currentChatId) {
+            if (!currentChatId && !isTempMode) {
                  chatView.innerHTML = `<div style="flex:1; display:flex; flex-direction:column; justify-content:center; align-items:center; opacity:0.5;"><h1 style="font-size:2.5rem; margin-bottom:0;">VincentAI</h1><p>Advanced Neural Interface</p></div>`;
                  return;
             }
 
-            const conversations = loadConversations();
-            const chat = conversations.find(c => c.id === currentChatId);
-            if (!chat) return;
+            let messages = [];
+            if (isTempMode) {
+                messages = tempChatHistory;
+            } else {
+                const conversations = loadConversations();
+                const chat = conversations.find(c => c.id === currentChatId);
+                if (chat) messages = chat.messages;
+            }
 
-            chat.messages.forEach(msg => {
+            messages.forEach(msg => {
                 const div = document.createElement('div');
                 div.className = `message ${msg.role}`;
                 
                 let avatarHtml;
-                if (msg.role === 'ai') {
-                    avatarHtml = `<div class="msg-avatar ai"><img src="https://api.dicebear.com/9.x/bottts-neutral/svg?seed=VincentAI" alt="AI"></div>`;
-                } else {
-                    if (currentUser) avatarHtml = `<div class="msg-avatar user"><img src="${currentUser.picture}" alt="U"></div>`;
-                    else avatarHtml = `<div class="msg-avatar user"><div style="width:100%;height:100%;background:#555;"></div></div>`;
-                }
+                if (msg.role === 'ai') avatarHtml = `<div class="msg-avatar ai"><img src="https://api.dicebear.com/9.x/bottts-neutral/svg?seed=VincentAI" alt="AI"></div>`;
+                else avatarHtml = currentUser && !isTempMode ? `<div class="msg-avatar user"><img src="${currentUser.picture}" alt="U"></div>` : `<div class="msg-avatar user"><div style="width:100%;height:100%;background:#555;"></div></div>`;
 
                 div.innerHTML = `
                     ${avatarHtml}
                     <div class="msg-content">
-                        <div class="sender-name">${msg.role === 'ai' ? 'VincentAI' : (currentUser ? currentUser.name : 'You')}</div>
+                        <div class="sender-name">${msg.role === 'ai' ? 'VincentAI' : (currentUser && !isTempMode ? currentUser.name : 'You')}</div>
                         <div class="msg-text">${msg.role === 'ai' ? marked.parse(msg.content) : msg.content}</div>
                     </div>
                 `;
@@ -518,8 +573,9 @@
         function renderSidebar() {
             const list = document.getElementById('history-list');
             list.innerHTML = '';
+            if(isTempMode) return; // Hide history in temp mode
+
             const conversations = loadConversations();
-            
             conversations.forEach(chat => {
                 const isActive = chat.id === currentChatId ? 'active' : '';
                 const item = document.createElement('div');
@@ -560,15 +616,13 @@
                 renderSidebar();
             }
         }
-        window.onclick = () => document.querySelectorAll('.dropdown-menu').forEach(el => el.style.display = 'none');
+        window.onclick = (e) => {
+            if (e.target.id === 'settings-modal') toggleSettings();
+            document.querySelectorAll('.dropdown-menu').forEach(el => el.style.display = 'none');
+        };
 
         // --- UX HELPERS ---
-        userInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                sendMessage();
-            }
-        });
+        userInput.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } });
 
         function handleFileUpload(input) {
             const file = input.files[0];
@@ -583,23 +637,12 @@
 
         function updateModelLabel() { 
             const select = document.getElementById('model-select');
-            const label = select.options[select.selectedIndex].text;
-            const value = select.value;
-            
-            document.getElementById('model-label').innerText = label;
-            
-            // Warning Logic
-            const banner = document.getElementById('warning-banner');
-            if (value === 'horde') {
-                banner.style.display = 'flex';
-            } else {
-                banner.style.display = 'none';
-            }
+            document.getElementById('model-label').innerText = select.options[select.selectedIndex].text;
+            document.getElementById('warning-banner').style.display = select.value === 'horde' ? 'flex' : 'none';
         }
         
         function autoResize(el) { el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px'; document.getElementById('send-btn').classList.toggle('active', el.value.trim().length>0); }
         function parseJwt(token) { return JSON.parse(decodeURIComponent(window.atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join(''))); }
-        
         async function generateToken(msgId) {
             const raw = msgId + SECRET_SALT;
             const enc = new TextEncoder();
