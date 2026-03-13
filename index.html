@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
-    <title>VincentAI | Advanced Neural Interface</title>
+    <title>VincentAI | temu chatgpt</title>
     <meta name="description" content="VincentAI is a professional, multi-model AI interface offering access to DeepSeek, GPT-4, Claude, and more through a unified, secure dashboard.">
     <meta name="keywords" content="AI, LLM, Chatbot, DeepSeek, GPT-4, Llama 3, Artificial Intelligence, Neural Interface">
     <meta property="og:title" content="VincentAI | Professional">
@@ -264,17 +264,17 @@
                     <span id="model-label">DeepSeek V3.2</span>
                     <i class="fa-solid fa-caret-down"></i>
                     <select id="model-select" onchange="updateModelLabel()">
-                        <optgroup label="Fast & Reliable">
+                        <optgroup label="Recommended">
                             <option value="deepai-deepseek">DeepSeek V3.2</option>
+                            <option value="copilot">Microsoft Copilot</option>
+                        </optgroup>
+                        <optgroup label="Experimental">
                             <option value="deepai-llama">Llama 3.3 70B</option>
                             <option value="deepai-qwen">Qwen3 30B</option>
                             <option value="deepai-4omini">GPT-4o mini</option>
                             <option value="talkai">GPT-4.1 (TalkAI)</option>
                             <option value="chatplus">GPT-4o (ChatPlus)</option>
-                        </optgroup>
-                        <optgroup label="Experimental / Free">
                             <option value="horde">Stable Horde (Volunteer GPU)</option>
-                            <option value="copilot">Microsoft Copilot</option>
                             <option value="g4f">ChatGPT (Free/Scraped)</option>
                             <option value="useai">GPT-5 (Gateway)</option>
                         </optgroup>
@@ -292,7 +292,7 @@
         <div id="chat-view">
             <div style="flex:1; display:flex; flex-direction:column; justify-content:center; align-items:center; opacity:0.5;">
                 <h1 style="font-size:2.5rem; margin-bottom:0;">VincentAI</h1>
-                <p>Advanced Neural Interface</p>
+                <p>temu chatgpt</p>
             </div>
         </div>
 
@@ -307,7 +307,7 @@
                 <button class="icon-btn" onclick="document.getElementById('file-input').click()"><i class="fa-solid fa-plus"></i></button>
                 <input type="file" id="file-input" style="display:none" onchange="handleFileUpload(this)">
                 
-                <textarea id="user-input" rows="1" placeholder="Message VincentAI..." oninput="autoResize(this)" autofocus></textarea>
+                <textarea id="user-input" rows="1" placeholder="Message VincentAI..." oninput="autoResize(this)" autofocus maxlength="10000"></textarea>
                 <button id="send-btn" class="icon-btn send-btn" onclick="sendMessage()"><i class="fa-solid fa-paper-plane"></i></button>
             </div>
         </div>
