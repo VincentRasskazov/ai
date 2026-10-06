@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Assistant | Demo Preview</title>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <style>
+    :root {
+      --primary: #2563eb;
+      --bg-color: #f3f4f6;
+      --chat-bg: #ffffff;
+      --text-main: #1f2937;
+      --text-muted: #6b7280;
+      --border: #e5e7eb;
+    }
+    
+    body, html {
+      margin: 0; padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg-color);
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background-image: radial-gradient(#d1d5db 1px, transparent 1px);
+      background-size: 20px 20px;
+    }
+
+    /* Watermark / Anti-Theft */
+    .watermark-overlay {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      pointer-events: none;
+      z-index: 9999;
+      background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" opacity="0.03" transform="rotate(-45)"><text x="50%" y="50%" font-size="60" font-family="sans-serif" font-weight="bold" fill="black" text-anchor="middle">UNLICENSED DEMO</text></svg>');
+      background-repeat: repeat;
+      background-size: 400px;
+    }
+
+    /* Professional Widget Container */
+    .widget-container {
+      width: 400px;
+      height: 600px;
+      background: var(--chat-bg);
+      border-radius: 16px;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      position: relative;
+      border: 1px solid rgba(255,255,255,0.5);
+    }
+
+    /* Header */
+    .chat-header {
+      background: #111827;
+      color: white;
+      padding: 16px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .client-title {
+      font-size: 16px;
+      font-weight: 600;
+      text-transform: capitalize;
+    }
+    .demo-badge {
+      font-size: 11px;
+      font-weight: 700;
+      background: #fbbf24;
+      color: #92400e;
+      padding: 2px 6px;
+      border-radius: 4px;
+      display: inline-block;
+      width: fit-content;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* Chat Area */
+    .chat-messages {
+      flex: 1;
+      padding: 20px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .msg {
+      max-width: 85%;
+      padding: 12px 16px;
+      font-size: 14px;
+      line-height: 1.5;
+      position: relative;
+    }
+    
+    .msg p { margin: 0 0 8px 0; }
+    .msg p:last-child { margin: 0; }
+    .msg ul { margin: 8px 0; padding-left: 20px; }
+
+    .msg.bot {
+      background: #f3f4f6;
+      color: var(--text-main);
+      align-self: flex-start;
+      border-radius: 16px 16px 16px 4px;
+    }
+
+    .msg.user {
+      background: var(--primary);
+      color: white;
+      align-self: flex-end;
+      border-radius: 16px 16px 4px 16px;
+    }
+
+    /* Input Area */
+    .chat-input-wrapper {
+      padding: 16px;
+      background: #fff;
+      border-top: 1px solid var(--border);
+    }
+    
+    .chat-input {
+      display: flex;
+      background: #f9fafb;
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      overflow: hidden;
+      padding: 4px;
+    }
+
+    .chat-input input {
+      flex: 1;
+      border: none;
+      background: transparent;
+      padding: 10px 16px;
+      font-size: 14px;
+      outline: none;
+    }
+
+    .chat-input button {
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 20px;
+      padding: 8px 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+
+    .chat-input button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    /* Footer Warning */
+    .demo-footer {
+      text-align: center;
+      padding: 8px;
+      background: #fee2e2;
+      color: #991b1b;
+      font-size: 11px;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+
+<div class="watermark-overlay"></div>
+
+<div class="widget-container">
+  <div class="chat-header">
+    <span class="demo-badge">Preview Mode</span>
+    <div class="client-title" id="chat-title">AI Assistant</div>
+  </div>
+  
+  <div class="chat-messages" id="messages">
+    <div class="msg bot">Hi there! How can I help you today?</div>
+  </div>
+  
+  <div class="chat-input-wrapper">
+    <form class="chat-input" id="chat-form">
+      <input type="text" id="user-input" placeholder="Type a message..." autocomplete="off" required />
+      <button type="submit" id="send-btn">Send</button>
+    </form>
+  </div>
+  
+  <div class="demo-footer">
+    ⚠️ UNLICENSED DEMO — Do not embed in production.
+  </div>
+</div>
+
+<script>
+  // 1. Format the title based on the URL (e.g. ?client=sydney-roofing -> "Sydney Roofing")
+  const urlParams = new URLSearchParams(window.location.search);
+  const CLIENT_ID = urlParams.get('client') || 'demo';
+  
+  const formattedName = CLIENT_ID.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+  document.getElementById('chat-title').innerText = `${formattedName} Assistant`;
+
+  // 2. Chat Logic
+  const form = document.getElementById('chat-form');
+  const input = document.getElementById('user-input');
+  const messages = document.getElementById('messages');
+  const sendBtn = document.getElementById('send-btn');
+  const chatHistory = [];
+
+  function appendMessage(text, role) {
+    const div = document.createElement('div');
+    div.className = `msg ${role}`;
+    if (role === 'bot') {
+      div.innerHTML = marked.parse(text);
+    } else {
+      div.innerText = text;
+    }
+    messages.appendChild(div);
+    messages.scrollTop = messages.scrollHeight;
+    return div;
+  }
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const query = input.value.trim();
+    if (!query) return;
+
+    appendMessage(query, 'user');
+    input.value = '';
+    sendBtn.disabled = true;
+
+    const botMessageDiv = appendMessage('...', 'bot');
+    let rawBotResponse = '';
+
+    try {
+      const res = await fetch('https://backendai-ablv.onrender.com/b2b/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          client_id: CLIENT_ID, 
+          message: query,
+          history: chatHistory 
+        })
+      });
+
+      if (!res.ok) throw new Error('Request failed');
+
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      botMessageDiv.innerHTML = '';
+
+      // Throttling the Markdown parser so the browser doesn't freeze
+      let updateTimeout;
+      
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        
+        rawBotResponse += decoder.decode(value, { stream: true });
+        
+        // Use requestAnimationFrame to prevent UI lag while streaming
+        if (!updateTimeout) {
+          updateTimeout = requestAnimationFrame(() => {
+            botMessageDiv.innerHTML = marked.parse(rawBotResponse);
+            messages.scrollTop = messages.scrollHeight;
+            updateTimeout = null;
+          });
+        }
+      }
+      
+      // Final parse catch-up
+      botMessageDiv.innerHTML = marked.parse(rawBotResponse);
+
+      chatHistory.push({ role: 'user', content: query });
+      chatHistory.push({ role: 'assistant', content: rawBotResponse });
+
+    } catch (err) {
+      botMessageDiv.innerText = "Sorry, I'm having trouble connecting right now.";
+    } finally {
+      sendBtn.disabled = false;
+    }
+  });
+</script>
+</body>
+</html>
