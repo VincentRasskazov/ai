@@ -7,82 +7,154 @@
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <style>
     :root {
-      --primary: #2563eb;
-      --bg-color: #f3f4f6;
+      --primary: #0f172a;
+      --primary-hover: #334155;
+      --accent: #3b82f6;
+      --bg-color: #f8fafc;
       --chat-bg: #ffffff;
-      --text-main: #1f2937;
-      --text-muted: #6b7280;
-      --border: #e5e7eb;
+      --text-main: #1e293b;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      --success: #10b981;
+      --danger: #ef4444;
     }
     
     body, html {
       margin: 0; padding: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif;
       background: var(--bg-color);
       height: 100vh;
       display: flex;
       justify-content: center;
       align-items: center;
-      background-image: radial-gradient(#d1d5db 1px, transparent 1px);
-      background-size: 20px 20px;
+      background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
+      background-size: 24px 24px;
     }
 
-    /* Watermark / Anti-Theft */
+    /* Watermark */
     .watermark-overlay {
       position: absolute;
       top: 0; left: 0; right: 0; bottom: 0;
       pointer-events: none;
       z-index: 9999;
-      background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" opacity="0.03" transform="rotate(-45)"><text x="50%" y="50%" font-size="60" font-family="sans-serif" font-weight="bold" fill="black" text-anchor="middle">UNLICENSED DEMO</text></svg>');
+      background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" opacity="0.02" transform="rotate(-45)"><text x="50%" y="50%" font-size="60" font-family="sans-serif" font-weight="800" fill="black" text-anchor="middle">UNLICENSED DEMO</text></svg>');
       background-repeat: repeat;
-      background-size: 400px;
+      background-size: 500px;
     }
 
     /* Professional Widget Container */
     .widget-container {
-      width: 400px;
-      height: 600px;
+      width: 420px;
+      height: 650px;
       background: var(--chat-bg);
       border-radius: 16px;
-      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(15, 23, 42, 0.05);
       display: flex;
       flex-direction: column;
       overflow: hidden;
       position: relative;
-      border: 1px solid rgba(255,255,255,0.5);
     }
 
     /* Header */
     .chat-header {
-      background: #111827;
+      background: var(--primary);
       color: white;
-      padding: 16px 20px;
+      padding: 18px 24px;
       display: flex;
       flex-direction: column;
-      gap: 4px;
+      gap: 6px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
     }
+    
+    .header-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
     .client-title {
-      font-size: 16px;
+      font-size: 17px;
       font-weight: 600;
-      text-transform: capitalize;
+      letter-spacing: -0.3px;
     }
-    .demo-badge {
-      font-size: 11px;
-      font-weight: 700;
-      background: #fbbf24;
-      color: #92400e;
-      padding: 2px 6px;
-      border-radius: 4px;
-      display: inline-block;
-      width: fit-content;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
+
+    /* Status Indicators */
+    .status-container {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 500;
+      color: #94a3b8;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--text-muted);
+    }
+
+    .status-dot.active {
+      background: var(--success);
+      box-shadow: 0 0 8px rgba(16, 185, 129, 0.6);
+      animation: pulse 2s infinite;
+    }
+
+    .status-dot.error {
+      background: var(--danger);
+      box-shadow: 0 0 8px rgba(239, 68, 68, 0.6);
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(0.95); opacity: 1; }
+      50% { transform: scale(1.1); opacity: 0.8; }
+      100% { transform: scale(0.95); opacity: 1; }
+    }
+
+    /* Error Overlay (Full Screen inside widget) */
+    .setup-error-overlay {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(4px);
+      z-index: 100;
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 30px;
+      text-align: center;
+    }
+
+    .setup-error-overlay h3 {
+      color: var(--danger);
+      margin: 0 0 12px 0;
+      font-size: 18px;
+    }
+
+    .setup-error-overlay p {
+      color: var(--text-main);
+      font-size: 14px;
+      line-height: 1.6;
+      margin: 0 0 16px 0;
+    }
+
+    .code-block {
+      background: #f1f5f9;
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-family: monospace;
+      font-size: 12px;
+      color: #334155;
+      border: 1px solid var(--border);
+      word-break: break-all;
     }
 
     /* Chat Area */
     .chat-messages {
       flex: 1;
-      padding: 20px;
+      padding: 24px;
       overflow-y: auto;
       display: flex;
       flex-direction: column;
@@ -91,44 +163,57 @@
 
     .msg {
       max-width: 85%;
-      padding: 12px 16px;
+      padding: 14px 18px;
       font-size: 14px;
-      line-height: 1.5;
+      line-height: 1.6;
       position: relative;
     }
     
     .msg p { margin: 0 0 8px 0; }
     .msg p:last-child { margin: 0; }
-    .msg ul { margin: 8px 0; padding-left: 20px; }
+    .msg strong { font-weight: 600; color: inherit; }
 
     .msg.bot {
-      background: #f3f4f6;
+      background: var(--bg-color);
       color: var(--text-main);
       align-self: flex-start;
       border-radius: 16px 16px 16px 4px;
+      border: 1px solid var(--border);
+    }
+    
+    .msg.bot.error-msg {
+      background: #fef2f2;
+      border-color: #fca5a5;
+      color: #991b1b;
     }
 
     .msg.user {
-      background: var(--primary);
+      background: var(--accent);
       color: white;
       align-self: flex-end;
       border-radius: 16px 16px 4px 16px;
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
     }
 
     /* Input Area */
     .chat-input-wrapper {
-      padding: 16px;
+      padding: 16px 24px 24px 24px;
       background: #fff;
-      border-top: 1px solid var(--border);
     }
     
     .chat-input {
       display: flex;
-      background: #f9fafb;
+      background: #f8fafc;
       border: 1px solid var(--border);
-      border-radius: 24px;
+      border-radius: 30px;
       overflow: hidden;
-      padding: 4px;
+      padding: 6px;
+      transition: border-color 0.2s;
+    }
+    
+    .chat-input:focus-within {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
     }
 
     .chat-input input {
@@ -138,32 +223,28 @@
       padding: 10px 16px;
       font-size: 14px;
       outline: none;
+      color: var(--text-main);
     }
 
     .chat-input button {
       background: var(--primary);
       color: white;
       border: none;
-      border-radius: 20px;
-      padding: 8px 16px;
+      border-radius: 24px;
+      padding: 10px 20px;
       font-weight: 600;
+      font-size: 13px;
       cursor: pointer;
-      transition: opacity 0.2s;
+      transition: background 0.2s;
+    }
+
+    .chat-input button:hover:not(:disabled) {
+      background: var(--primary-hover);
     }
 
     .chat-input button:disabled {
       opacity: 0.5;
       cursor: not-allowed;
-    }
-
-    /* Footer Warning */
-    .demo-footer {
-      text-align: center;
-      padding: 8px;
-      background: #fee2e2;
-      color: #991b1b;
-      font-size: 11px;
-      font-weight: 600;
     }
   </style>
 </head>
@@ -172,45 +253,53 @@
 <div class="watermark-overlay"></div>
 
 <div class="widget-container">
+  
+  <!-- Setup Error Overlay -->
+  <div class="setup-error-overlay" id="setup-error">
+    <h3>Configuration Error</h3>
+    <p>No valid business ID was found in the URL. You must specify which AI model to load.</p>
+    <p><strong>How to fix it:</strong> Add your client ID to the end of the URL like this:</p>
+    <div class="code-block" id="example-url"></div>
+  </div>
+
   <div class="chat-header">
-    <span class="demo-badge">Preview Mode</span>
-    <div class="client-title" id="chat-title">AI Assistant</div>
+    <div class="header-top">
+      <div class="client-title" id="chat-title">AI Assistant</div>
+      <div class="status-container">
+        <div class="status-dot" id="status-dot"></div>
+        <span id="status-text">Connecting...</span>
+      </div>
+    </div>
   </div>
   
-  <div class="chat-messages" id="messages">
-    <div class="msg bot">Hi there! How can I help you today?</div>
-  </div>
+  <div class="chat-messages" id="messages"></div>
   
   <div class="chat-input-wrapper">
     <form class="chat-input" id="chat-form">
-      <input type="text" id="user-input" placeholder="Type a message..." autocomplete="off" required />
+      <input type="text" id="user-input" placeholder="Ask a question..." autocomplete="off" required />
       <button type="submit" id="send-btn">Send</button>
     </form>
-  </div>
-  
-  <div class="demo-footer">
-    ⚠️ UNLICENSED DEMO — Do not embed in production.
   </div>
 </div>
 
 <script>
-  // 1. Format the title based on the URL (e.g. ?client=sydney-roofing -> "Sydney Roofing")
+  // 1. Initial URL Validation
   const urlParams = new URLSearchParams(window.location.search);
-  const CLIENT_ID = urlParams.get('client') || 'demo';
+  const CLIENT_ID = urlParams.get('client');
   
-  const formattedName = CLIENT_ID.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
-  document.getElementById('chat-title').innerText = `${formattedName} Assistant`;
-
-  // 2. Chat Logic
-  const form = document.getElementById('chat-form');
+  const setupErrorOverlay = document.getElementById('setup-error');
+  const exampleUrl = document.getElementById('example-url');
+  const statusDot = document.getElementById('status-dot');
+  const statusText = document.getElementById('status-text');
   const input = document.getElementById('user-input');
-  const messages = document.getElementById('messages');
   const sendBtn = document.getElementById('send-btn');
-  const chatHistory = [];
+  const messages = document.getElementById('messages');
+  const form = document.getElementById('chat-form');
 
-  function appendMessage(text, role) {
+  // Helper to add messages to the UI
+  function appendMessage(text, role, isError = false) {
     const div = document.createElement('div');
-    div.className = `msg ${role}`;
+    div.className = `msg ${role} ${isError ? 'error-msg' : ''}`;
     if (role === 'bot') {
       div.innerHTML = marked.parse(text);
     } else {
@@ -220,6 +309,30 @@
     messages.scrollTop = messages.scrollHeight;
     return div;
   }
+
+  // Pre-flight check: Is the URL parameter completely missing?
+  if (!CLIENT_ID || CLIENT_ID.trim() === '') {
+    setupErrorOverlay.style.display = 'flex';
+    const baseUrl = window.location.href.split('?')[0];
+    exampleUrl.innerText = `${baseUrl}?client=demo-roofing`;
+    statusDot.classList.add('error');
+    statusText.innerText = 'Offline';
+    input.disabled = true;
+    sendBtn.disabled = true;
+  } else {
+    // UI indicates a valid connection attempt
+    const formattedName = CLIENT_ID.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+    document.getElementById('chat-title').innerText = formattedName;
+    
+    statusDot.classList.add('active');
+    statusText.innerText = 'System Active';
+    
+    // Send initial greeting
+    appendMessage(`Hi there! I am the virtual assistant for ${formattedName}. How can I help you today?`, 'bot');
+  }
+
+  // 2. Chat Logic & Backend Validation
+  const chatHistory = [];
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -244,13 +357,17 @@
         })
       });
 
-      if (!res.ok) throw new Error('Request failed');
+      // Catch specific 403 error (Firestore mismatch / Typo in URL)
+      if (res.status === 403) {
+        throw new Error('403_FORBIDDEN');
+      }
+      
+      if (!res.ok) throw new Error('SERVER_ERROR');
 
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
       botMessageDiv.innerHTML = '';
 
-      // Throttling the Markdown parser so the browser doesn't freeze
       let updateTimeout;
       
       while (true) {
@@ -259,7 +376,6 @@
         
         rawBotResponse += decoder.decode(value, { stream: true });
         
-        // Use requestAnimationFrame to prevent UI lag while streaming
         if (!updateTimeout) {
           updateTimeout = requestAnimationFrame(() => {
             botMessageDiv.innerHTML = marked.parse(rawBotResponse);
@@ -269,14 +385,22 @@
         }
       }
       
-      // Final parse catch-up
       botMessageDiv.innerHTML = marked.parse(rawBotResponse);
-
       chatHistory.push({ role: 'user', content: query });
       chatHistory.push({ role: 'assistant', content: rawBotResponse });
 
     } catch (err) {
-      botMessageDiv.innerText = "Sorry, I'm having trouble connecting right now.";
+      statusDot.classList.remove('active');
+      statusDot.classList.add('error');
+      statusText.innerText = 'Database Error';
+      
+      if (err.message === '403_FORBIDDEN') {
+        botMessageDiv.classList.add('error-msg');
+        botMessageDiv.innerHTML = `<strong>Database Mismatch</strong><br>The ID <code>${CLIENT_ID}</code> does not exist in your database or is inactive.<br><br><strong>Fix it:</strong> Ensure the document ID in Firebase perfectly matches the URL (check for underscores vs. hyphens).`;
+      } else {
+        botMessageDiv.classList.add('error-msg');
+        botMessageDiv.innerText = "Connection lost. Ensure your Render server is awake and active.";
+      }
     } finally {
       sendBtn.disabled = false;
     }
