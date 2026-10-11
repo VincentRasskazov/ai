@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>404 | Page Not Found</title>
+  <style>
+    :root {
+      --primary: #0f172a;
+      --accent: #2563eb;
+      --bg-color: #f1f5f9;
+      --text-main: #334155;
+      --text-muted: #64748b;
+    }
+
+    body, html {
+      margin: 0; padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif;
+      background: var(--bg-color);
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      /* Subtle grid background to match the demo UI */
+      background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
+      background-size: 24px 24px;
+    }
+
+    .container {
+      text-align: center;
+      padding: 50px 40px;
+      background: white;
+      border-radius: 24px;
+      box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.1), 0 0 10px rgba(0,0,0,0.03);
+      border: 1px solid rgba(0,0,0,0.05);
+      max-width: 400px;
+      /* Smooth floating animation */
+      animation: float 6s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0% { transform: translateY(0px); }
+      50% { transform: translateY(-10px); }
+      100% { transform: translateY(0px); }
+    }
+
+    h1 {
+      font-size: 84px;
+      margin: 0;
+      /* Cool gradient text */
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      line-height: 1;
+      letter-spacing: -2px;
+    }
+
+    h2 {
+      font-size: 22px;
+      color: var(--primary);
+      margin: 16px 0 10px 0;
+      letter-spacing: -0.5px;
+    }
+
+    p {
+      color: var(--text-muted);
+      line-height: 1.6;
+      margin-bottom: 32px;
+      font-size: 15px;
+    }
+
+    .home-btn {
+      display: inline-block;
+      background: var(--primary);
+      color: white;
+      text-decoration: none;
+      padding: 14px 32px;
+      border-radius: 30px;
+      font-weight: 600;
+      font-size: 14px;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15);
+    }
+
+    .home-btn:hover {
+      background: var(--accent);
+      box-shadow: 0 6px 16px rgba(37, 99, 235, 0.25);
+      transform: translateY(-2px);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>404</h1>
+    <h2>System Hallucination</h2>
+    <p>Our AI searched the entire database, but it looks like this page doesn't actually exist. Let's get you back to familiar territory.</p>
+    <a href="https://vincentrasskazov.com.au" class="home-btn">Return to Homepage</a>
+  </div>
+</body>
+</html>
