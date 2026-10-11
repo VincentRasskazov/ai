@@ -1,37 +1,56 @@
-# Vincent AI Backend Infrastructure
+# Vincent AI - Frontend Interfaces
 
-This repository contains the core backend infrastructure for a multi-tenant B2B AI lead generation agency. The system is designed to deploy, manage, and monitor custom AI sales assistants for local service businesses without manual database intervention.
+Lightweight, vanilla JavaScript frontend for the Vincent AI B2B lead generation platform. 
 
-## Architecture Overview
+This repository contains the static client-facing web apps. There is no build step, no framework bloat, and no package manager required. It relies entirely on native browser APIs and Server-Sent Events (SSE) to stream markdown-formatted responses in real-time from the Python/Flask backend.
 
-The backend is built on Python and Flask, utilizing Server-Sent Events (SSE) to handle streaming responses from AI providers. It acts as a middleware layer between the client-facing chat widgets and the database, enforcing strict lead-capture rules before routing data to business owners.
+## Architecture
 
-The system is fully integrated with the Model Context Protocol (MCP), allowing the database to be manipulated directly via natural language from an authenticated Google Workspace environment.
+* **Framework:** Vanilla HTML / CSS / JS
+* **Markdown Parsing:** Marked.js (via CDN)
+* **API Communication:** `fetch` API handling chunked SSE streams
+* **State Management:** URL Parameters + Local JS Memory
 
-## Core Features
+## Core Files
 
-* **Multi-Tenant Data Segregation:** Client knowledge bases, routing emails, and active states are securely isolated in Firebase Firestore. 
-* **MCP Automation Pipeline:** Includes a custom `batch_process_clients` JSON-RPC tool. This allows an LLM to scrape business targets, format their data, and insert them directly into the production database in a single transaction while ignoring duplicates.
-* **Anti-Spam Lead Catcher:** A regex-based interception engine scans the AI's output stream in real-time. When a lead (Name/Phone/Details) is detected, the stream is intercepted, the data is routed to the client via the Resend API, and a hard-lock prevents duplicate emails within the same session.
-* **Telemetry & Logging:** Every interaction is logged in a hierarchical structure (`Client ID -> Conversation ID -> Messages`). This data feeds directly into a secure client dashboard to prove ROI and debug prompt hallucinations.
-* **CORS & Pre-flight Bypass:** Engineered to handle strict cross-origin resource sharing requirements and reverse-proxy buffering, ensuring stable SSE connections from static HTML embeds on client websites.
+### 1. demo.html (The Chat Widget)
+The primary interactive interface for prospective customers. It is designed to act as a standalone landing page or an embeddable iframe. 
 
-## Tech Stack
+**Routing:**
+Requires a valid `client` URL parameter to initialize. 
+`[https://vincentrasskazov.com.au/ai/demo.html?client=smith-plumbing](https://vincentrasskazov.com.au/ai/demo.html?client=smith-plumbing)`
 
-* **Backend:** Python, Flask, Flask-CORS
-* **Database:** Firebase Admin SDK (Firestore)
-* **Email Routing:** Resend API, Cloudflare Email Routing
-* **Transport:** Server-Sent Events (SSE)
-* **Automation:** Model Context Protocol (MCP)
+**Mechanics:**
+* Generates a unique `conversation_id` on page load to group session data.
+* Intercepts standard form submissions to prevent page reloads.
+* Reads chunked data from the backend stream and dynamically updates the DOM using `requestAnimationFrame` for high-performance text rendering.
+* Handles 403 Forbidden errors if the requested client ID is inactive or missing from the Firestore database.
 
-## Environment Setup
+### 2. logs.html (The Client Dashboard)
+A secure, read-only dashboard for business owners to review their AI's chat transcripts and verify captured leads.
 
-To run this server locally or deploy to production, the following environment variables are required:
+**Routing:**
+Requires a `client` parameter. Optionally accepts a `conv` parameter to auto-focus a specific session.
+`[https://vincentrasskazov.com.au/ai/logs.html?client=smith-plumbing&conv=sess_abc123](https://vincentrasskazov.com.au/ai/logs.html?client=smith-plumbing&conv=sess_abc123)`
 
-* `PORT`: The port the server will bind to (default: 10000).
-* `FIREBASE_SERVICE_ACCOUNT`: Stringified JSON of the Firebase Admin service account key.
-* `RESEND_API_KEY`: API key for transactional lead emails.
+**Mechanics:**
+* Fetches the 20 most recent conversations from the backend REST API.
+* Constructs a two-pane UI (sidebar for sessions, main panel for transcripts).
+* Parses raw database timestamps into localized `en-AU` formats.
 
-## Deployment Notes
+## Deployment
 
-This application is optimized for deployment on Render. The server explicitly forces `X-Accel-Buffering: no` and `Cache-Control: no-transform` in the response headers to prevent Render's internal proxies from buffering the SSE stream and causing client-side timeouts.
+These files are designed to be statically hosted via GitHub Pages (or any basic web server). 
+
+Because the architecture is entirely decoupled, all environment variables and database credentials live exclusively on the backend server. The frontend only needs to know the public URL of the REST API (currently hardcoded to the Render production environment).
+
+## Development Setup
+
+To run locally for testing or CSS modifications, simply serve the directory using Python's built-in HTTP server:
+
+```bash
+python -m http.server 8000
+```
+
+Then open your browser to:
+`http://localhost:8000/demo.html?client=test-client`
