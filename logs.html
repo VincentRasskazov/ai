@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Chat Transcripts | AI Dashboard</title>
+  <title>AI Dashboard | Transcripts</title>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <style>
     :root {
@@ -13,6 +13,7 @@
       --border: #e2e8f0;
       --text-main: #334155;
       --text-muted: #64748b;
+      --success: #10b981;
     }
 
     body {
@@ -21,13 +22,43 @@
       background-color: #f1f5f9;
       color: var(--text-main);
       display: flex;
+      flex-direction: column;
       height: 100vh;
+      overflow: hidden;
+    }
+
+    /* Admin Top Stats Bar */
+    .admin-stats-container {
+      display: none; /* Hidden for normal clients */
+      background: white;
+      border-bottom: 1px solid var(--border);
+      padding: 16px 24px;
+      gap: 20px;
+      grid-template-columns: repeat(4, 1fr);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      z-index: 10;
+    }
+
+    .stat-card {
+      background: var(--secondary);
+      border: 1px solid var(--border);
+      padding: 16px;
+      border-radius: 8px;
+    }
+
+    .stat-title { font-size: 12px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;}
+    .stat-value { font-size: 24px; font-weight: 700; color: var(--primary); margin-top: 6px; }
+
+    /* Main Interface */
+    .dashboard-body {
+      display: flex;
+      flex: 1;
       overflow: hidden;
     }
 
     /* Sidebar */
     .sidebar {
-      width: 320px;
+      width: 340px;
       background: #ffffff;
       border-right: 1px solid var(--border);
       display: flex;
@@ -41,16 +72,23 @@
       color: white;
     }
 
-    .sidebar-header h2 {
-      margin: 0;
-      font-size: 16px;
-      text-transform: capitalize;
+    .sidebar-header h2 { margin: 0; font-size: 16px; text-transform: capitalize; }
+    .sidebar-header p { margin: 4px 0 0 0; font-size: 12px; color: #94a3b8; }
+
+    .filter-bar {
+      padding: 12px;
+      border-bottom: 1px solid var(--border);
+      background: #f8fafc;
+      display: none; /* Admin only */
     }
 
-    .sidebar-header p {
-      margin: 4px 0 0 0;
-      font-size: 12px;
-      color: #94a3b8;
+    .filter-bar select {
+      width: 100%;
+      padding: 8px;
+      border-radius: 6px;
+      border: 1px solid #cbd5e1;
+      font-size: 13px;
+      outline: none;
     }
 
     .conv-list {
@@ -60,36 +98,35 @@
     }
 
     .conv-item {
-      padding: 16px;
+      padding: 14px;
       border-radius: 8px;
       cursor: pointer;
-      margin-bottom: 8px;
+      margin-bottom: 6px;
       border: 1px solid transparent;
       transition: all 0.2s;
     }
 
-    .conv-item:hover {
-      background: var(--secondary);
-    }
-
-    .conv-item.active {
-      background: #eff6ff;
-      border-color: #bfdbfe;
-    }
-
-    .conv-id {
+    .conv-item:hover { background: var(--secondary); }
+    .conv-item.active { background: #eff6ff; border-color: #bfdbfe; }
+    
+    .conv-client-tag {
+      font-size: 10px;
+      background: #e2e8f0;
+      padding: 2px 6px;
+      border-radius: 4px;
+      color: var(--text-main);
+      display: inline-block;
+      margin-bottom: 6px;
       font-weight: 600;
-      font-size: 14px;
-      color: var(--primary);
-      margin-bottom: 4px;
     }
 
-    .conv-meta {
-      font-size: 12px;
-      color: var(--text-muted);
-      display: flex;
-      justify-content: space-between;
+    .conv-item.has-lead .conv-client-tag {
+      background: #d1fae5;
+      color: #065f46;
     }
+
+    .conv-id { font-weight: 600; font-size: 13px; color: var(--primary); margin-bottom: 6px; word-break: break-all; }
+    .conv-meta { font-size: 11px; color: var(--text-muted); display: flex; justify-content: space-between; }
 
     /* Main Transcript Area */
     .main-panel {
@@ -108,11 +145,7 @@
       align-items: center;
     }
 
-    .transcript-header h3 {
-      margin: 0;
-      font-size: 18px;
-      color: var(--primary);
-    }
+    .transcript-header h3 { margin: 0; font-size: 18px; color: var(--primary); }
 
     .transcript-area {
       flex: 1;
@@ -124,10 +157,10 @@
     }
 
     .msg {
-      max-width: 70%;
-      padding: 16px 20px;
+      max-width: 75%;
+      padding: 14px 18px;
       border-radius: 12px;
-      font-size: 15px;
+      font-size: 14px;
       line-height: 1.5;
       position: relative;
     }
@@ -135,57 +168,45 @@
     .msg p { margin: 0 0 10px 0; }
     .msg p:last-child { margin: 0; }
 
-    .msg.user {
-      align-self: flex-end;
-      background: var(--accent);
-      color: white;
-      border-bottom-right-radius: 4px;
-    }
-
-    .msg.assistant {
-      align-self: flex-start;
-      background: #ffffff;
-      border: 1px solid var(--border);
-      border-bottom-left-radius: 4px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-    }
-
-    .msg-time {
-      font-size: 11px;
-      opacity: 0.7;
-      margin-top: 8px;
-      text-align: right;
-    }
-
-    .msg.assistant .msg-time {
-      color: var(--text-muted);
-    }
-
-    /* Loading & Error States */
-    .state-overlay {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100%;
-      width: 100%;
-      text-align: center;
-    }
+    .msg.user { align-self: flex-end; background: var(--accent); color: white; border-bottom-right-radius: 4px; }
+    .msg.assistant { align-self: flex-start; background: #ffffff; border: 1px solid var(--border); border-bottom-left-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
     
-    .spinner {
-      width: 40px;
-      height: 40px;
-      border: 4px solid var(--border);
-      border-top-color: var(--accent);
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-      margin-bottom: 20px;
+    .lead-captured-tag {
+      background: #d1fae5; border: 1px solid #34d399; color: #065f46;
+      padding: 8px 12px; border-radius: 6px; font-size: 13px; font-weight: 600;
+      margin-top: 10px; display: inline-block;
     }
 
+    .msg-time { font-size: 11px; opacity: 0.7; margin-top: 8px; text-align: right; }
+    .msg.assistant .msg-time { color: var(--text-muted); }
+
+    /* Loading States */
+    .state-overlay { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; width: 100%; flex: 1; }
+    .spinner { width: 40px; height: 40px; border: 4px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 20px; }
     @keyframes spin { 100% { transform: rotate(360deg); } }
   </style>
 </head>
 <body>
+
+  <!-- Top Admin Stats (Hidden by default) -->
+  <div class="admin-stats-container" id="admin-stats">
+    <div class="stat-card">
+      <div class="stat-title">Total Active Businesses</div>
+      <div class="stat-value" id="stat-businesses">0</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-title">Total Conversations</div>
+      <div class="stat-value" id="stat-convos">0</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-title">Leads Captured</div>
+      <div class="stat-value" style="color: var(--success);" id="stat-leads">0</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-title">Avg. Engagement</div>
+      <div class="stat-value" id="stat-engagement">0 msg/chat</div>
+    </div>
+  </div>
 
   <div id="loading-state" class="state-overlay">
     <div class="spinner"></div>
@@ -194,15 +215,23 @@
 
   <div id="error-state" class="state-overlay" style="display: none;">
     <h3 style="color: var(--danger);">Authentication Error</h3>
-    <p id="error-msg">Missing valid client credentials.</p>
+    <p id="error-msg">Missing valid credentials.</p>
   </div>
 
-  <div id="dashboard" style="display: none; width: 100%; height: 100%;">
+  <div class="dashboard-body" id="dashboard" style="display: none;">
     <div class="sidebar">
       <div class="sidebar-header">
         <h2 id="client-name">Client Dashboard</h2>
         <p>Recent AI Interactions</p>
       </div>
+      
+      <!-- Admin Filter Bar -->
+      <div class="filter-bar" id="admin-filter-bar">
+        <select id="client-filter">
+          <option value="ALL">All Businesses</option>
+        </select>
+      </div>
+
       <div class="conv-list" id="conv-list">
         <!-- Conversation items injected here -->
       </div>
@@ -220,8 +249,10 @@
 
   <script>
     const urlParams = new URLSearchParams(window.location.search);
-    const CLIENT_ID = urlParams.get('client');
+    // Support both ?client= and your new ?build= parameter
+    const CLIENT_ID = urlParams.get('client') || urlParams.get('build') || urlParams.get('prototype');
     const TARGET_CONV = urlParams.get('conv');
+    const isAdmin = CLIENT_ID === 'admin123';
 
     const loadingState = document.getElementById('loading-state');
     const errorState = document.getElementById('error-state');
@@ -229,7 +260,7 @@
     const convListEl = document.getElementById('conv-list');
     const transcriptArea = document.getElementById('transcript-area');
     
-    let conversationsData = [];
+    let allConversations = []; // Stores all fetched data
 
     function formatDate(isoString) {
       if (!isoString) return 'Unknown time';
@@ -237,16 +268,89 @@
       return date.toLocaleString('en-AU', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
     }
 
+    // Helper to check if a conversation successfully generated a lead
+    function hasLead(messages) {
+      return messages.some(m => m.role === 'assistant' && m.content.includes('||LEAD:'));
+    }
+
+    function calculateAdminStats() {
+      if (!isAdmin) return;
+      const uniqueClients = new Set(allConversations.map(c => c.client_id));
+      let totalMessages = 0;
+      let totalLeads = 0;
+
+      allConversations.forEach(c => {
+        totalMessages += c.messages.length;
+        if (hasLead(c.messages)) totalLeads++;
+      });
+
+      const avgEngagement = allConversations.length > 0 ? (totalMessages / allConversations.length).toFixed(1) : 0;
+
+      document.getElementById('stat-businesses').innerText = uniqueClients.size;
+      document.getElementById('stat-convos').innerText = allConversations.length;
+      document.getElementById('stat-leads').innerText = totalLeads;
+      document.getElementById('stat-engagement').innerText = `${avgEngagement} msg/chat`;
+
+      // Populate Filter Dropdown
+      const select = document.getElementById('client-filter');
+      select.innerHTML = '<option value="ALL">All Businesses</option>';
+      uniqueClients.forEach(client => {
+        const opt = document.createElement('option');
+        opt.value = client;
+        opt.innerText = client.split('-').join(' ');
+        select.appendChild(opt);
+      });
+    }
+
+    function renderSidebar(filterClient = 'ALL') {
+      convListEl.innerHTML = '';
+      
+      const filtered = filterClient === 'ALL' 
+        ? allConversations 
+        : allConversations.filter(c => c.client_id === filterClient);
+
+      if (filtered.length === 0) {
+        convListEl.innerHTML = '<p style="padding: 20px; text-align: center; color: #64748b;">No conversations found.</p>';
+        return;
+      }
+
+      filtered.forEach(conv => {
+        const msgCount = conv.messages.length;
+        const lastMsgTime = msgCount > 0 ? formatDate(conv.messages[msgCount-1].timestamp) : '';
+        const isLead = hasLead(conv.messages);
+        
+        const item = document.createElement('div');
+        item.className = `conv-item ${isLead ? 'has-lead' : ''}`;
+        item.id = `conv-${conv.conversation_id}`;
+        
+        // Show client tag if in admin mode
+        const clientTag = isAdmin ? `<div class="conv-client-tag">${conv.client_id}</div>` : '';
+        
+        item.innerHTML = `
+          ${clientTag}
+          <div class="conv-id">${conv.conversation_id.substring(0, 15)}...</div>
+          <div class="conv-meta">
+            <span>${msgCount} messages</span>
+            <span>${lastMsgTime}</span>
+          </div>
+        `;
+        item.onclick = () => renderTranscript(conv.conversation_id);
+        convListEl.appendChild(item);
+      });
+    }
+
     function renderTranscript(convId) {
-      const conv = conversationsData.find(c => c.conversation_id === convId);
+      const conv = allConversations.find(c => c.conversation_id === convId);
       if (!conv) return;
 
-      // Update UI selection
       document.querySelectorAll('.conv-item').forEach(el => el.classList.remove('active'));
       const activeEl = document.getElementById(`conv-${convId}`);
       if (activeEl) activeEl.classList.add('active');
 
-      document.getElementById('current-conv-title').innerText = `Transcript: ${convId}`;
+      document.getElementById('current-conv-title').innerText = isAdmin 
+        ? `Transcript: ${conv.client_id}` 
+        : `Transcript Details`;
+        
       transcriptArea.innerHTML = '';
 
       if (conv.messages.length === 0) {
@@ -260,7 +364,20 @@
         
         const contentDiv = document.createElement('div');
         if (msg.role === 'assistant') {
-          contentDiv.innerHTML = marked.parse(msg.content);
+          // Format the secret lead tag nicely if it exists
+          let cleanContent = msg.content;
+          let leadHtml = '';
+          
+          if (cleanContent.includes('||LEAD:')) {
+            const startIdx = cleanContent.indexOf('||LEAD:');
+            const endIdx = cleanContent.indexOf('||', startIdx + 2);
+            if (endIdx > -1) {
+              leadHtml = `<div class="lead-captured-tag">🎯 Lead Successfully Captured & Emailed</div>`;
+              cleanContent = cleanContent.substring(0, startIdx) + cleanContent.substring(endIdx + 2);
+            }
+          }
+          
+          contentDiv.innerHTML = marked.parse(cleanContent) + leadHtml;
         } else {
           contentDiv.innerText = msg.content;
         }
@@ -274,7 +391,6 @@
         transcriptArea.appendChild(div);
       });
 
-      // Scroll to bottom
       transcriptArea.scrollTop = transcriptArea.scrollHeight;
     }
 
@@ -290,53 +406,43 @@
         if (!res.ok) throw new Error('Failed to fetch data');
         
         const data = await res.json();
-        conversationsData = data.conversations || [];
+        allConversations = data.conversations || [];
 
         loadingState.style.display = 'none';
         dashboard.style.display = 'flex';
 
-        // Format Header
-        document.getElementById('client-name').innerText = CLIENT_ID.split('-').join(' ');
-
-        if (conversationsData.length === 0) {
-          convListEl.innerHTML = '<p style="padding: 20px; text-align: center; color: #64748b;">No conversations found.</p>';
-          return;
+        // Setup Admin Mode vs Standard Mode UI
+        if (isAdmin) {
+          document.getElementById('admin-stats').style.display = 'grid';
+          document.getElementById('admin-filter-bar').style.display = 'block';
+          document.getElementById('client-name').innerText = 'Global Admin Overview';
+          calculateAdminStats();
+          
+          document.getElementById('client-filter').addEventListener('change', (e) => {
+            renderSidebar(e.target.value);
+            transcriptArea.innerHTML = '<div class="state-overlay"><p>Select a conversation from the sidebar.</p></div>';
+            document.getElementById('current-conv-title').innerText = 'Select a conversation';
+          });
+        } else {
+          document.getElementById('client-name').innerText = CLIENT_ID.split('-').join(' ');
         }
 
-        // Build Sidebar
-        conversationsData.forEach(conv => {
-          const msgCount = conv.messages.length;
-          const lastMsgTime = msgCount > 0 ? formatDate(conv.messages[msgCount-1].timestamp) : '';
-          
-          const item = document.createElement('div');
-          item.className = 'conv-item';
-          item.id = `conv-${conv.conversation_id}`;
-          item.innerHTML = `
-            <div class="conv-id">${conv.conversation_id}</div>
-            <div class="conv-meta">
-              <span>${msgCount} messages</span>
-              <span>${lastMsgTime}</span>
-            </div>
-          `;
-          item.onclick = () => renderTranscript(conv.conversation_id);
-          convListEl.appendChild(item);
-        });
+        renderSidebar('ALL');
 
         // Auto-select the conversation passed in the URL, or default to the most recent one
-        if (TARGET_CONV && conversationsData.some(c => c.conversation_id === TARGET_CONV)) {
+        if (TARGET_CONV && allConversations.some(c => c.conversation_id === TARGET_CONV)) {
           renderTranscript(TARGET_CONV);
-        } else {
-          renderTranscript(conversationsData[0].conversation_id);
+        } else if (allConversations.length > 0) {
+          renderTranscript(allConversations[0].conversation_id);
         }
 
       } catch (err) {
         loadingState.style.display = 'none';
         errorState.style.display = 'flex';
-        document.getElementById('error-msg').innerText = 'Could not securely connect to the database. Please check the URL and try again.';
+        document.getElementById('error-msg').innerText = 'Could not securely connect to the database.';
       }
     }
 
-    // Initialize
     fetchLogs();
   </script>
 </body>
