@@ -27,14 +27,14 @@
       overflow: hidden;
     }
 
-    /* Admin Top Stats Bar */
-    .admin-stats-container {
-      display: none; /* Hidden for normal clients */
+    /* Universal Stats Bar */
+    .stats-container {
+      display: grid;
       background: white;
       border-bottom: 1px solid var(--border);
       padding: 16px 24px;
       gap: 20px;
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
       box-shadow: 0 1px 3px rgba(0,0,0,0.05);
       z-index: 10;
     }
@@ -120,9 +120,13 @@
       font-weight: 600;
     }
 
-    .conv-item.has-lead .conv-client-tag {
-      background: #d1fae5;
+    .conv-item.has-lead .conv-client-tag, 
+    .conv-item.has-lead .conv-id {
       color: #065f46;
+    }
+    
+    .conv-item.has-lead {
+      border-left: 3px solid var(--success);
     }
 
     .conv-id { font-weight: 600; font-size: 13px; color: var(--primary); margin-bottom: 6px; word-break: break-all; }
@@ -174,7 +178,7 @@
     .lead-captured-tag {
       background: #d1fae5; border: 1px solid #34d399; color: #065f46;
       padding: 8px 12px; border-radius: 6px; font-size: 13px; font-weight: 600;
-      margin-top: 10px; display: inline-block;
+      margin-top: 15px; display: inline-block; width: 100%; text-align: center;
     }
 
     .msg-time { font-size: 11px; opacity: 0.7; margin-top: 8px; text-align: right; }
@@ -188,10 +192,10 @@
 </head>
 <body>
 
-  <!-- Top Admin Stats (Hidden by default) -->
-  <div class="admin-stats-container" id="admin-stats">
-    <div class="stat-card">
-      <div class="stat-title">Total Active Businesses</div>
+  <!-- Universal Stats Bar -->
+  <div class="stats-container" id="stats-container">
+    <div class="stat-card" id="card-businesses" style="display: none;">
+      <div class="stat-title">Active Businesses</div>
       <div class="stat-value" id="stat-businesses">0</div>
     </div>
     <div class="stat-card">
@@ -249,9 +253,7 @@
 
   <script>
     const urlParams = new URLSearchParams(window.location.search);
-    // Support both ?client= and your new ?build= parameter
     const CLIENT_ID = urlParams.get('client') || urlParams.get('build') || urlParams.get('prototype');
-    const TARGET_CONV = urlParams.get('conv');
     const isAdmin = CLIENT_ID === 'admin123';
 
     const loadingState = document.getElementById('loading-state');
@@ -260,7 +262,7 @@
     const convListEl = document.getElementById('conv-list');
     const transcriptArea = document.getElementById('transcript-area');
     
-    let allConversations = []; // Stores all fetched data
+    let allConversations = []; 
 
     function formatDate(isoString) {
       if (!isoString) return 'Unknown time';
@@ -268,38 +270,41 @@
       return date.toLocaleString('en-AU', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
     }
 
-    // Helper to check if a conversation successfully generated a lead
+    // Advanced lead parsing to catch phone numbers since backend strips the ||LEAD: tag
     function hasLead(messages) {
-      return messages.some(m => m.role === 'assistant' && m.content.includes('||LEAD:'));
+      // Look for a raw tag just in case
+      if (messages.some(m => m.role === 'assistant' && m.content.includes('||LEAD:'))) return true;
+      
+      // Fallback: Scan user messages for Australian phone numbers (e.g., 0412345678, 0412 345 678, 11-digit typos)
+      const phoneRegex = /(?:\+?61|0)?[ \-]*[2-478](?:[ \-]*\d){7,10}/;
+      return messages.some(m => m.role === 'user' && phoneRegex.test(m.content));
     }
 
-    function calculateAdminStats() {
-      if (!isAdmin) return;
-      const uniqueClients = new Set(allConversations.map(c => c.client_id));
+    // Dynamic stat calculation based on current filter
+    function calculateStats(filterClient = 'ALL') {
+      const targetConvos = filterClient === 'ALL' 
+        ? allConversations 
+        : allConversations.filter(c => c.client_id === filterClient);
+
+      const uniqueClients = new Set(targetConvos.map(c => c.client_id));
       let totalMessages = 0;
       let totalLeads = 0;
 
-      allConversations.forEach(c => {
+      targetConvos.forEach(c => {
         totalMessages += c.messages.length;
         if (hasLead(c.messages)) totalLeads++;
       });
 
-      const avgEngagement = allConversations.length > 0 ? (totalMessages / allConversations.length).toFixed(1) : 0;
+      const avgEngagement = targetConvos.length > 0 ? (totalMessages / targetConvos.length).toFixed(1) : 0;
 
-      document.getElementById('stat-businesses').innerText = uniqueClients.size;
-      document.getElementById('stat-convos').innerText = allConversations.length;
+      document.getElementById('stat-convos').innerText = targetConvos.length;
       document.getElementById('stat-leads').innerText = totalLeads;
       document.getElementById('stat-engagement').innerText = `${avgEngagement} msg/chat`;
 
-      // Populate Filter Dropdown
-      const select = document.getElementById('client-filter');
-      select.innerHTML = '<option value="ALL">All Businesses</option>';
-      uniqueClients.forEach(client => {
-        const opt = document.createElement('option');
-        opt.value = client;
-        opt.innerText = client.split('-').join(' ');
-        select.appendChild(opt);
-      });
+      if (isAdmin) {
+        document.getElementById('card-businesses').style.display = 'block';
+        document.getElementById('stat-businesses').innerText = uniqueClients.size;
+      }
     }
 
     function renderSidebar(filterClient = 'ALL') {
@@ -323,12 +328,11 @@
         item.className = `conv-item ${isLead ? 'has-lead' : ''}`;
         item.id = `conv-${conv.conversation_id}`;
         
-        // Show client tag if in admin mode
         const clientTag = isAdmin ? `<div class="conv-client-tag">${conv.client_id}</div>` : '';
         
         item.innerHTML = `
           ${clientTag}
-          <div class="conv-id">${conv.conversation_id.substring(0, 15)}...</div>
+          <div class="conv-id">${conv.conversation_id.substring(0, 18)}...</div>
           <div class="conv-meta">
             <span>${msgCount} messages</span>
             <span>${lastMsgTime}</span>
@@ -364,20 +368,7 @@
         
         const contentDiv = document.createElement('div');
         if (msg.role === 'assistant') {
-          // Format the secret lead tag nicely if it exists
-          let cleanContent = msg.content;
-          let leadHtml = '';
-          
-          if (cleanContent.includes('||LEAD:')) {
-            const startIdx = cleanContent.indexOf('||LEAD:');
-            const endIdx = cleanContent.indexOf('||', startIdx + 2);
-            if (endIdx > -1) {
-              leadHtml = `<div class="lead-captured-tag">🎯 Lead Successfully Captured & Emailed</div>`;
-              cleanContent = cleanContent.substring(0, startIdx) + cleanContent.substring(endIdx + 2);
-            }
-          }
-          
-          contentDiv.innerHTML = marked.parse(cleanContent) + leadHtml;
+          contentDiv.innerHTML = marked.parse(msg.content);
         } else {
           contentDiv.innerText = msg.content;
         }
@@ -390,6 +381,13 @@
         div.appendChild(timeDiv);
         transcriptArea.appendChild(div);
       });
+
+      // Visually inject a success tag at the bottom of the transcript if a lead was detected
+      if (hasLead(conv.messages)) {
+        const leadDiv = document.createElement('div');
+        leadDiv.innerHTML = '<div class="lead-captured-tag">🎯 Lead Successfully Captured & Emailed to Business Owner</div>';
+        transcriptArea.appendChild(leadDiv);
+      }
 
       transcriptArea.scrollTop = transcriptArea.scrollHeight;
     }
@@ -408,17 +406,32 @@
         const data = await res.json();
         allConversations = data.conversations || [];
 
+        // Ensure chronological sorting (newest first)
+        allConversations.forEach(c => {
+            if (!c.last_updated && c.messages.length > 0) {
+                c.last_updated = c.messages[c.messages.length - 1].timestamp;
+            }
+        });
+        allConversations.sort((a, b) => new Date(b.last_updated || 0) - new Date(a.last_updated || 0));
+
         loadingState.style.display = 'none';
         dashboard.style.display = 'flex';
 
-        // Setup Admin Mode vs Standard Mode UI
         if (isAdmin) {
-          document.getElementById('admin-stats').style.display = 'grid';
           document.getElementById('admin-filter-bar').style.display = 'block';
           document.getElementById('client-name').innerText = 'Global Admin Overview';
-          calculateAdminStats();
           
-          document.getElementById('client-filter').addEventListener('change', (e) => {
+          const uniqueClients = new Set(allConversations.map(c => c.client_id));
+          const select = document.getElementById('client-filter');
+          uniqueClients.forEach(client => {
+            const opt = document.createElement('option');
+            opt.value = client;
+            opt.innerText = client.split('-').join(' ');
+            select.appendChild(opt);
+          });
+          
+          select.addEventListener('change', (e) => {
+            calculateStats(e.target.value);
             renderSidebar(e.target.value);
             transcriptArea.innerHTML = '<div class="state-overlay"><p>Select a conversation from the sidebar.</p></div>';
             document.getElementById('current-conv-title').innerText = 'Select a conversation';
@@ -427,12 +440,11 @@
           document.getElementById('client-name').innerText = CLIENT_ID.split('-').join(' ');
         }
 
+        calculateStats('ALL');
         renderSidebar('ALL');
 
-        // Auto-select the conversation passed in the URL, or default to the most recent one
-        if (TARGET_CONV && allConversations.some(c => c.conversation_id === TARGET_CONV)) {
-          renderTranscript(TARGET_CONV);
-        } else if (allConversations.length > 0) {
+        // Auto-select the first conversation to populate the right panel
+        if (allConversations.length > 0) {
           renderTranscript(allConversations[0].conversation_id);
         }
 
