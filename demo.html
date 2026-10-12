@@ -248,7 +248,7 @@
 <script>
   // 1. Core Setup & Conversation ID Generation
   const urlParams = new URLSearchParams(window.location.search);
-  const CLIENT_ID = urlParams.get('client');
+  const CLIENT_ID = urlParams.get('id');
   
   // Generate a unique ID for this specific chat session on page load
   const CONVERSATION_ID = 'sess_' + Math.random().toString(36).substr(2, 10);
